@@ -9,6 +9,8 @@ import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.item.inventory.entity.PlayerInventory;
+import org.spongepowered.api.item.inventory.query.QueryOperationTypes;
 import org.spongepowered.api.item.inventory.transaction.InventoryTransactionResult.Type;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
@@ -32,11 +34,14 @@ public class CMDBook implements CommandExecutor {
 		Player player = (Player) src;
 		
 		ItemStack itemStack = ItemStack.builder().itemType(ItemTypes.BOOK).add(Keys.DISPLAY_NAME, Text.of(TextColors.GREEN, "Book of Kits")).build();
+		PlayerInventory inv = player.getInventory().query(QueryOperationTypes.INVENTORY_TYPE.of(PlayerInventory.class));
 		
-		if(!player.getInventory().offer(itemStack).getType().equals(Type.SUCCESS)) {
-			src.sendMessage(Text.of(TextColors.RED, "Your inventory does not have enough space"));
+		if(!inv.getHotbar().offer(itemStack).getType().equals(Type.SUCCESS)) {
+			if(!inv.getMainGrid().offer(itemStack).getType().equals(Type.SUCCESS)) {
+				src.sendMessage(Text.of(TextColors.RED, "Your inventory does not have enough space"));
+			}
 		}
-
+		
 		return CommandResult.success();
 	}
 

@@ -296,7 +296,7 @@ public class KitService {
 
 		if (!grid.isEmpty()) {
 			int i = 0;
-			for (Inventory slot : inv.getMain().slots()) {
+			for (Inventory slot : inv.getMainGrid().slots()) {
 				if (grid.containsKey(i)) {
 					slot.set(grid.get(i));
 				}
