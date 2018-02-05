@@ -27,9 +27,13 @@ To obtain a kit:
 	
 #### Signs:
 To create a sign type <kit> then the kit name on next line
- 
+	
+![](https://i.imgur.com/ZdE93pP.png)
+
 You'll know you did it right if the color format changes:
- 
+
+![](https://i.imgur.com/18UX4KU.png)
+
 Right click to use sign.
 You can set in the config whether using the sign shows the kit or gets the kit by setting 'sign-action' to either 'view -or- get'
 
