@@ -69,7 +69,8 @@ You can set in the config whether using the sign shows the kit or gets the kit b
 * easykits.override.cooldown - Force player to use cooldown time.
 * easykits.override.limit - Set Max use for each kit.
 * easykits.override.price - Bypass price of kit if economy is enabled.
-* easykits.sign - Allow creation of kit signs
+* easykits.sign.create - Allow player to create kit signs
+* easykits.sign.break - Allow player to break kit signs
 * easykits.modify - Allows player to modify kit when viewing it
 
 #### Commands:
