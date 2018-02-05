@@ -2,27 +2,45 @@
 
 #### Usage:
 To create a kit, simply arrange your inventory and armor with the items you would like in the kit.
+
     /kit create <name>
+    
 To set a price for a kit run the following:
+
     /kit price <kit> <price>
+    
 To set a cooldown time for a kit run the following:
+
 NOTE: Time format examples: 10s, 1m, 1h, 1d
+
     /kit cooldown <kit> <cooldown>
+    
 To set the max limit player can get kit with the following:
+
     /kit limit <kit> <limit>
+    
 To reset players cooldown or limit on a kit type the following:
+
     /kit reset cooldown <kit> <player>
     /kit reset limit <kit> <player>
+    
 To view all kits player has permission to obtain the kits book with the following:
+
     /kit book
+    
 This book will always contain an updated list of kits. A max a 54 kits can be displayed. Simply right click to open. The inventory will show have a book for each kit. click to view contents of kit. If you would like to obtain this click, click the nether star in the bottom right corner.
 
 #### Notes:
 If you you prefer commands you can list kits with the following:
+
     /kit list
+    
 To view contents of a kit:
+
     /kit view <kit>
+    
 To obtain a kit:
+
     /kit <kit>
 	
 #### Signs:
