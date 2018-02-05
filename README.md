@@ -56,20 +56,21 @@ Right click to use sign.
 You can set in the config whether using the sign shows the kit or gets the kit by setting 'sign-action' to either 'view -or- get'
 
 #### Permissions:
-* EasyKits.kits.<kit> - Access to the kit by name
-* EasyKits.cmd.create - Access to /kit create
-* EasyKits.cmd.delete - Access to /kit remove
-* EasyKits.cmd.cooldown - Access to /kit cooldown
-* EasyKits.cmd.limit - Access to /kit limit
-* EasyKits.cmd.price - Access to /kit price
-* EasyKits.cmd.give - Access to /kit give
-* EasyKits.cmd.list - Access to /kit list - Access to /kit book
-* EasyKits.cmd.view - Access to /kit view - Allow opening kit in book.
-* EasyKits.cmd.reset - Access to /kit reset
-* EasyKits.override.cooldown - Force player to use cooldown time.
-* EasyKits.override.limit - Set Max use for each kit.
-* EasyKits.override.price - Bypass price of kit if economy is enabled.
-* EasyKits.sign - Allow creation of kit signs
+* easykits.kits.<kit> - Access to the kit by name
+* easykits.cmd.create - Access to /kit create
+* easykits.cmd.delete - Access to /kit remove
+* easykits.cmd.cooldown - Access to /kit cooldown
+* easykits.cmd.limit - Access to /kit limit
+* easykits.cmd.price - Access to /kit price
+* easykits.cmd.give - Access to /kit give
+* easykits.cmd.list - Access to /kit list - Access to /kit book
+* easykits.cmd.view - Access to /kit view - Allow opening kit in book.
+* easykits.cmd.reset - Access to /kit reset
+* easykits.override.cooldown - Force player to use cooldown time.
+* easykits.override.limit - Set Max use for each kit.
+* easykits.override.price - Bypass price of kit if economy is enabled.
+* easykits.sign - Allow creation of kit signs
+* easykits.modify - Allows player to modify kit when viewing it
 
 #### Commands:
 * /kit create <kit>
