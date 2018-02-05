@@ -56,7 +56,7 @@ Right click to use sign.
 You can set in the config whether using the sign shows the kit or gets the kit by setting 'sign-action' to either 'view -or- get'
 
 #### Permissions:
-* easykits.kits.<kit> - Access to the kit by name
+* easykits.kit.<kit> - Access to the kit by name
 * easykits.cmd.create - Access to /kit create
 * easykits.cmd.delete - Access to /kit remove
 * easykits.cmd.cooldown - Access to /kit cooldown
@@ -65,6 +65,7 @@ You can set in the config whether using the sign shows the kit or gets the kit b
 * easykits.cmd.give - Access to /kit give
 * easykits.cmd.list - Access to /kit list - Access to /kit book
 * easykits.cmd.view - Access to /kit view - Allow opening kit in book.
+* easykits.cmd.book - Access to /kit book
 * easykits.cmd.reset - Access to /kit reset
 * easykits.override.cooldown - Force player to use cooldown time.
 * easykits.override.limit - Set Max use for each kit.
