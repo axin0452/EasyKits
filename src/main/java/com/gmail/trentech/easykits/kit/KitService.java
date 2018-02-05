@@ -30,13 +30,6 @@ public class KitService {
 	public HashMap<String, Kit> getKits() {
 		return KitDB.all();
 	}
-	
-	public Kit create(String name, Player player, long cooldown, int limit, double price) {
-		Kit kit = new Kit(name, player, cooldown, limit, price);
-
-		save(kit);
-		return kit;
-	}
 
 	public void delete(String name) {
 		KitDB.remove(name);
@@ -137,7 +130,7 @@ public class KitService {
 
 		if (!grid.isEmpty()) {
 			int i = 0;
-			for (Inventory slot : inv.getMain().slots()) {
+			for (Inventory slot : inv.getMainGrid().slots()) {
 				if (grid.containsKey(i)) {
 					if(slot.peek().isPresent()) {
 						if(!likeStack(grid.get(i), inv)) {
@@ -242,9 +235,10 @@ public class KitService {
 	private boolean firstEmpty(ItemStack itemStack, Inventory inventory) {
 		for (Inventory slot : inventory.slots()) {
 
-			if(!slot.peek().isPresent()) {
-				slot.set(itemStack);
-				return true;
+			if(!slot.peek().isPresent()) {	
+				if(slot.set(itemStack).getType().equals(Type.SUCCESS)) {
+					return true;
+				}
 			}
 		}
 		
@@ -259,8 +253,20 @@ public class KitService {
 				ItemStack i = optionalItem.get();
 				
 				if(i.getType().equals(itemStack.getType())) {
-					if(slot.offer(itemStack).getType().equals(Type.SUCCESS)) {
-						return true;
+					int fit = i.getMaxStackQuantity() - i.getQuantity();
+					
+					if(fit >= itemStack.getQuantity()) {
+						i.setQuantity(i.getQuantity() + itemStack.getQuantity());
+						
+						if(slot.set(i).getType().equals(Type.SUCCESS)) {
+							return true;
+						}
+					} else if(fit != 0) {
+						i.setQuantity(i.getQuantity() + fit);
+
+						if(slot.set(i).getType().equals(Type.SUCCESS)) {
+							itemStack.setQuantity(itemStack.getQuantity() - fit);
+						}
 					}
 				}
 			}

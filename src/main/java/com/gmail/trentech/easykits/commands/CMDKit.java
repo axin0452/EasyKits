@@ -40,7 +40,7 @@ public class CMDKit implements CommandExecutor {
 		KitEvent.Get event = new KitEvent.Get(kit, Cause.of(EventContext.builder().add(EventContextKeys.PLAYER, player).build(), player));
 
 		if (!Sponge.getEventManager().post(event)) {
-			if(!event.getKitService().setKit(player, kit, false)) {
+			if(!event.getKitService().setKit(player, event.getKit(), true)) {
 				throw new CommandException(Text.of(TextColors.RED, "Could not give kit. Possibly need more inventory space."), false);
 			}
 		}

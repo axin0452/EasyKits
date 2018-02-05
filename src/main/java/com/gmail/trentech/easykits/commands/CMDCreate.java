@@ -9,11 +9,15 @@ import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.cause.EventContext;
+import org.spongepowered.api.event.cause.EventContextKeys;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColors;
 
 import com.gmail.trentech.easykits.Main;
+import com.gmail.trentech.easykits.events.KitEvent;
 import com.gmail.trentech.easykits.kit.Kit;
 import com.gmail.trentech.easykits.kit.KitService;
 import com.gmail.trentech.pjc.core.ConfigManager;
@@ -54,9 +58,14 @@ public class CMDCreate implements CommandExecutor {
 		int limit = config.getNode("options", "default-limit").getInt();
 		double price = config.getNode("options", "default-price").getDouble();
 		
-		kitService.create(name, ((Player) src), cooldown, limit, price);
+		Kit kit = new Kit(name, ((Player) src), cooldown, limit, price);
+	
+		KitEvent.Create event = new KitEvent.Create(kit, Cause.of(EventContext.builder().add(EventContextKeys.PLAYER, ((Player) src)).build(), ((Player) src)));
 
-		src.sendMessage(Text.of(TextColors.DARK_GREEN, "Created new kit ", name));
+		if (!Sponge.getEventManager().post(event)) {
+			event.getKitService().save(event.getKit());
+			src.sendMessage(Text.of(TextColors.DARK_GREEN, "Created new kit ", name));
+		}
 
 		return CommandResult.success();
 	}

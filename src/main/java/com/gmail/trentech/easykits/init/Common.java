@@ -68,6 +68,9 @@ public class Common {
 		Help kitList = new Help("kit list", "list", "")
 				.setPermission("pji.cmd.kit.list");
 		
+		Help kitBook = new Help("kit book", "book", "")
+				.setPermission("pji.cmd.kit.book");
+		
 		Help kitPrice = new Help("kit price", "price", "")
 				.setPermission("pji.cmd.kit.price");
 		
@@ -81,6 +84,7 @@ public class Common {
 				.addChild(kitDelete)
 				.addChild(kitCreate)
 				.addChild(kitList)
+				.addChild(kitBook)
 				.addChild(kitGive)
 				.addChild(kitLimit)
 				.addChild(kitCooldown)

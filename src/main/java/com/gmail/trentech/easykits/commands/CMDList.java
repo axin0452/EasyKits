@@ -37,9 +37,9 @@ public class CMDList implements CommandExecutor {
 		KitService kitService = Sponge.getServiceManager().provideUnchecked(KitService.class);
 
 		for (Entry<String, Kit> entry : kitService.getKits().entrySet()) {
-			Kit kit = entry.getValue();
-
-			list.add(Text.builder().onClick(TextActions.executeCallback(CMDView.viewKit(kit))).append(Text.of(TextColors.YELLOW, " - ", kit.getName())).build());		
+			if(src.hasPermission("easykits.kit." + entry.getKey())) {
+				list.add(Text.builder().onClick(TextActions.executeCallback(CMDView.viewKit(entry.getValue()))).append(Text.of(TextColors.YELLOW, " - ", entry.getKey())).build());	
+			}
 		}
 
 		if (src instanceof Player) {

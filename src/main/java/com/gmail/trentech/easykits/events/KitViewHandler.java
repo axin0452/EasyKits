@@ -21,12 +21,12 @@ import org.spongepowered.api.text.format.TextColors;
 import com.gmail.trentech.easykits.kit.Kit;
 import com.gmail.trentech.easykits.kit.KitService;
 
-public class ClickHandler implements Consumer<ClickInventoryEvent> {
+public class KitViewHandler implements Consumer<ClickInventoryEvent> {
 
 	private Kit kit;
 	private KitService kitService;
 	
-	public ClickHandler(Kit kit) {
+	public KitViewHandler(Kit kit) {
 		this.kit = kit;
 		this.kitService = Sponge.getServiceManager().provideUnchecked(KitService.class);
 	}
@@ -51,10 +51,10 @@ public class ClickHandler implements Consumer<ClickInventoryEvent> {
 						if(!kitEvent.getKitService().setKit(player, kit, false)) {
 							player.sendMessage(Text.of(TextColors.RED, "Could not give kit. Possibly need more inventory space."));
 						}
-					}
-					event.setCancelled(true);
+					}				
 					// NOT WORKING YET
 					//player.getOpenInventory().get().close(player);
+					event.setCancelled(true);
 					return;
 				}
 			}

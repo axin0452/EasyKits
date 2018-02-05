@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -11,6 +12,9 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.cause.EventContext;
+import org.spongepowered.api.event.cause.EventContextKeys;
 import org.spongepowered.api.event.item.inventory.ClickInventoryEvent;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.Inventory;
@@ -23,7 +27,8 @@ import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColors;
 
 import com.gmail.trentech.easykits.Main;
-import com.gmail.trentech.easykits.events.ClickHandler;
+import com.gmail.trentech.easykits.events.KitEvent;
+import com.gmail.trentech.easykits.events.KitViewHandler;
 import com.gmail.trentech.easykits.kit.Kit;
 import com.gmail.trentech.easykits.utils.Resource;
 import com.gmail.trentech.pjc.help.Help;
@@ -49,7 +54,11 @@ public class CMDView implements CommandExecutor {
 		}
 		Kit kit = args.<Kit>getOne("kit").get();
 
-		open(player, kit);
+		KitEvent.View event = new KitEvent.View(kit, Cause.of(EventContext.builder().add(EventContextKeys.PLAYER, player).build(), player));
+
+		if (!Sponge.getEventManager().post(event)) {
+			open(player, event.getKit());
+		}
 
 		return CommandResult.success();
 	}
@@ -61,22 +70,10 @@ public class CMDView implements CommandExecutor {
 	}
 	
 	public static void open(Player player, Kit kit) {
-		String title = "Kit: " + kit.getName();
-		
-		if(kit.getPrice() > 0) {
-			title = title + " Price: $" + kit.getPrice();
-		}
-		if(kit.getLimit() > 0) {
-			title = title + " Limit: " + kit.getLimit();
-		}
-		if(kit.getCooldown() > 0) {
-			title = title + " Cooldown: " + Resource.getReadableTime(kit.getCooldown());
-		}
-		
 		Inventory inventory = Inventory.builder().of(InventoryArchetypes.DOUBLE_CHEST)
 				.property(InventoryDimension.PROPERTY_NAME, new InventoryDimension(9, 5))
-				.property(InventoryTitle.PROPERTY_NAME, InventoryTitle.of(Text.of(title)))
-				.listener(ClickInventoryEvent.class, new ClickHandler(kit))
+				.property(InventoryTitle.PROPERTY_NAME, InventoryTitle.of(Text.of("Kit: " + kit.getName())))
+				.listener(ClickInventoryEvent.class, new KitViewHandler(kit))
 				.build(Main.getPlugin());
 
 		Map<Integer, ItemStack> grid = kit.getGrid();

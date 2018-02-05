@@ -31,7 +31,7 @@ public class CMDDelete implements CommandExecutor {
 
 		src.sendMessage(Text.builder().color(TextColors.RED).append(Text.of(TextColors.RED, "[WARNING] ", TextColors.YELLOW, "Deleting this kit is permanent and cannot be undone. Confirm? ")).onClick(TextActions.runCommand("/easykits:kit delete yes")).append(Text.of(TextColors.DARK_PURPLE, TextStyles.UNDERLINE, "/kit delete yes")).build());
 
-		CMDYes.confirm.put(src, kit.getName());
+		CMDYes.confirm.put(src, kit);
 
 		return CommandResult.success();
 	}

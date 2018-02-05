@@ -42,12 +42,12 @@ public class CMDGive implements CommandExecutor {
 		KitEvent.Give event = new KitEvent.Give(kit, Cause.of(EventContext.builder().add(EventContextKeys.PLAYER, player).build(), player));
 
 		if (!Sponge.getEventManager().post(event)) {
-			if(!event.getKitService().setKit(player, kit, false)) {
+			if(!event.getKitService().setKit(player, event.getKit(), false)) {
 				throw new CommandException(Text.of(TextColors.RED, "Could not give kit. Possibly need more inventory space."), false);
 			}
 			
-			player.sendMessage(Text.of(TextColors.DARK_GREEN, src.getName(),  " gave you kit ", kit.getName()));
-			src.sendMessage(Text.of(TextColors.DARK_GREEN, "Gave kit ", kit.getName(), " to ", player.getName()));
+			player.sendMessage(Text.of(TextColors.DARK_GREEN, src.getName(),  " gave you kit ", event.getKit().getName()));
+			src.sendMessage(Text.of(TextColors.DARK_GREEN, "Gave kit ", event.getKit().getName(), " to ", player.getName()));
 		}
 
 		return CommandResult.success();

@@ -4,12 +4,14 @@ import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.text.Text;
 
+import com.gmail.trentech.easykits.commands.CMDBook;
 import com.gmail.trentech.easykits.commands.CMDCooldown;
 import com.gmail.trentech.easykits.commands.CMDCreate;
 import com.gmail.trentech.easykits.commands.CMDGive;
 import com.gmail.trentech.easykits.commands.CMDKit;
 import com.gmail.trentech.easykits.commands.CMDLimit;
 import com.gmail.trentech.easykits.commands.CMDList;
+import com.gmail.trentech.easykits.commands.CMDPrice;
 import com.gmail.trentech.easykits.commands.CMDView;
 import com.gmail.trentech.easykits.commands.delete.CMDDelete;
 import com.gmail.trentech.easykits.commands.delete.CMDYes;
@@ -43,6 +45,11 @@ public class Commands {
 		    .executor(new CMDList())
 		    .build();
 	
+	private CommandSpec cmdBook = CommandSpec.builder()
+		    .permission("easykits.cmd.kit.book")
+		    .executor(new CMDBook())
+		    .build();
+	
 	private CommandSpec cmdCooldown = CommandSpec.builder()
 		    .permission("easykits.cmd.kit.cooldown")
 		    .arguments(
@@ -64,7 +71,7 @@ public class Commands {
 		    .arguments(
 		    		GenericArguments.optional(new KitElement(Text.of("kit"))), 
 		    		GenericArguments.optional(GenericArguments.doubleNum(Text.of("price"))))
-		    .executor(new CMDLimit())
+		    .executor(new CMDPrice())
 		    .build();
 	
 	private CommandSpec cmdView = CommandSpec.builder()
@@ -122,6 +129,7 @@ public class Commands {
 			.child(cmdCreate, "create", "c")
 			.child(cmdDelete, "delete", "d")
 			.child(cmdList, "list", "ls")
+			.child(cmdBook, "book", "b")
 			.child(cmdView, "view", "v")
 			.child(cmdReset, "reset", "r")
 			.child(cmdGive, "give", "g")
