@@ -53,7 +53,7 @@ public class CMDCooldown implements CommandExecutor {
 	}
 	
 	public static long getTimeInSeconds(String time){
-		String[] times = time.split(" ");
+		String[] times = time.split(",");
 		long seconds = 0;
 		for(String t : times){
 			if(t.matches("(\\d+)[s]$")){

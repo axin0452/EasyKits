@@ -1,5 +1,8 @@
 package com.gmail.trentech.easykits.commands;
 
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -17,6 +20,8 @@ import org.spongepowered.api.event.cause.EventContext;
 import org.spongepowered.api.event.cause.EventContextKeys;
 import org.spongepowered.api.event.item.inventory.ClickInventoryEvent;
 import org.spongepowered.api.item.ItemTypes;
+import org.spongepowered.api.item.enchantment.Enchantment;
+import org.spongepowered.api.item.enchantment.EnchantmentTypes;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.InventoryArchetypes;
 import org.spongepowered.api.item.inventory.ItemStack;
@@ -122,7 +127,7 @@ public class CMDView implements CommandExecutor {
 					}
 				} else {
 					if(i - 36 == 5) {
-						slot.set(ItemStack.builder().itemType(ItemTypes.BARRIER).add(Keys.DISPLAY_NAME, Text.of(TextColors.GREEN, "Price: ", TextColors.WHITE, kit.getPrice())).build());
+						slot.set(ItemStack.builder().itemType(ItemTypes.BARRIER).add(Keys.DISPLAY_NAME, Text.of(TextColors.GREEN, "Price: $", TextColors.WHITE, new DecimalFormat(".##").format(kit.getPrice()))).build());
 					}
 					if(i - 36 == 6) {
 						slot.set(ItemStack.builder().itemType(ItemTypes.BARRIER).add(Keys.DISPLAY_NAME, Text.of(TextColors.GREEN, "Limit: ", TextColors.WHITE, kit.getLimit())).build());
@@ -131,7 +136,19 @@ public class CMDView implements CommandExecutor {
 						slot.set(ItemStack.builder().itemType(ItemTypes.BARRIER).add(Keys.DISPLAY_NAME, Text.of(TextColors.GREEN, "Cooldown: ", TextColors.WHITE, Resource.getReadableTime(kit.getCooldown()))).build());
 					}
 					if(i - 36 == 8) {
-						slot.set(ItemStack.builder().itemType(ItemTypes.NETHER_STAR).add(Keys.DISPLAY_NAME, Text.of(TextColors.LIGHT_PURPLE, "Get Kit")).build());
+						List<Text> lore = new ArrayList<>();
+						lore.add(Text.of("Click here to get kit"));
+						
+						List<Enchantment> enchantment = new ArrayList<>();
+						enchantment.add(Enchantment.builder().type(EnchantmentTypes.INFINITY).level(EnchantmentTypes.INFINITY.getMinimumLevel()).build());
+						
+						ItemStack itemStack = ItemStack.builder().itemType(ItemTypes.NETHER_STAR)
+								.add(Keys.ITEM_LORE, lore)
+								.add(Keys.ITEM_ENCHANTMENTS, enchantment)
+								.add(Keys.HIDE_ENCHANTMENTS, true)
+								.add(org.spongepowered.api.data.key.Keys.DISPLAY_NAME, Text.of(TextColors.GREEN, "Get Kit")).build();
+						
+						slot.set(itemStack);
 					}
 				}
 			}

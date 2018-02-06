@@ -1,6 +1,7 @@
 package com.gmail.trentech.easykits.events;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -321,8 +322,30 @@ public class EventManager {
 		Inventory inventory = builder.listener(ClickInventoryEvent.class, new KitBookHandler()).build(Main.getPlugin());
 		
 		for(Entry<String, Kit> entry : list.entrySet()) {
+			
+			
 			if(player.hasPermission("easykits.kit." + entry.getKey())) {
-				ItemStack itemStack = ItemStack.builder().itemType(ItemTypes.BOOK).add(org.spongepowered.api.data.key.Keys.DISPLAY_NAME, Text.of(TextColors.GREEN, "Kit: ", TextColors.WHITE, entry.getKey())).build();
+				Kit kit = entry.getValue();
+				List<Text> lore = new ArrayList<>();
+				
+				if(kit.getPrice() > 0) {
+					lore.add(Text.of(TextColors.GREEN, "Price: $", new DecimalFormat(".##").format(kit.getPrice())));
+				}
+			
+				if(kit.getLimit() > 0) {
+					lore.add(Text.of(TextColors.GREEN, "Limit: ", TextColors.WHITE, kit.getLimit()));
+				}
+				
+				if(kit.getCooldown() > 0) {
+					lore.add(Text.of(TextColors.GREEN, "Cooldown: ", TextColors.WHITE, Resource.getReadableTime(kit.getCooldown())));
+				}
+				
+				lore.add(Text.of("Click here to view kit"));
+				
+				ItemStack itemStack = ItemStack.builder().itemType(ItemTypes.BOOK)
+						.add(org.spongepowered.api.data.key.Keys.ITEM_LORE, lore)
+						.add(org.spongepowered.api.data.key.Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, entry.getKey())).build();
+				
 				inventory.set(itemStack);
 			}
 		}

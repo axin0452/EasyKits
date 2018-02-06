@@ -48,7 +48,7 @@ public class KitViewHandler implements Consumer<ClickInventoryEvent> {
 					KitEvent.Get kitEvent = new KitEvent.Get(kit, Cause.of(EventContext.builder().add(EventContextKeys.PLAYER, player).build(), player));
 
 					if (!Sponge.getEventManager().post(kitEvent)) {
-						if(!kitEvent.getKitService().setKit(player, kit, false)) {
+						if(!kitEvent.getKitService().setKit(player, kit, true)) {
 							player.sendMessage(Text.of(TextColors.RED, "Could not give kit. Possibly need more inventory space."));
 						}
 					}				
