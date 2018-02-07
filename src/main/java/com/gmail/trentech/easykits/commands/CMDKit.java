@@ -21,11 +21,6 @@ public class CMDKit implements CommandExecutor {
 
 	@Override
 	public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-		if (args.hasAny("help")) {
-			Help.executeList(src, Help.get("kit").get().getChildren());
-			return CommandResult.empty();
-		}
-		
 		if (!(src instanceof Player)) {
 			throw new CommandException(Text.of(TextColors.RED, "Must be a player"), false);
 		}

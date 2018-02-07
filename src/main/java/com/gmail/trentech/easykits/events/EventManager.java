@@ -1,7 +1,6 @@
 package com.gmail.trentech.easykits.events;
 
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -13,8 +12,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockSnapshot;
-import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.data.Transaction;
+import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
@@ -31,26 +30,28 @@ import org.spongepowered.api.event.filter.cause.Root;
 import org.spongepowered.api.event.item.inventory.ClickInventoryEvent;
 import org.spongepowered.api.event.item.inventory.InteractItemEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
-import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.Inventory.Builder;
 import org.spongepowered.api.item.inventory.InventoryArchetypes;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
+import org.spongepowered.api.item.inventory.entity.PlayerInventory;
 import org.spongepowered.api.item.inventory.property.InventoryDimension;
 import org.spongepowered.api.item.inventory.property.InventoryTitle;
+import org.spongepowered.api.item.inventory.query.QueryOperationTypes;
+import org.spongepowered.api.item.inventory.transaction.InventoryTransactionResult.Type;
 import org.spongepowered.api.service.economy.EconomyService;
 import org.spongepowered.api.service.economy.account.UniqueAccount;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
-import org.spongepowered.api.world.Location;
-import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.storage.WorldProperties;
 
 import com.gmail.trentech.easykits.Main;
-import com.gmail.trentech.easykits.commands.CMDView;
-import com.gmail.trentech.easykits.data.Keys;
+import com.gmail.trentech.easykits.data.ImmutableKitInfoData;
+import com.gmail.trentech.easykits.data.KitInfo;
+import com.gmail.trentech.easykits.data.KitInfoData;
 import com.gmail.trentech.easykits.data.KitUsage;
+import com.gmail.trentech.easykits.data.PlayerData;
 import com.gmail.trentech.easykits.kit.Kit;
 import com.gmail.trentech.easykits.kit.KitService;
 import com.gmail.trentech.easykits.utils.Resource;
@@ -103,58 +104,60 @@ public class EventManager {
 			return;
 		}
 		
-		if(kit.getPrice() > 0) {
-			Optional<EconomyService> optionalEconomy = Sponge.getServiceManager().provide(EconomyService.class);
+		if(!player.hasPermission("easykits.override.price")) {
+			if(kit.getPrice() > 0) {
+				Optional<EconomyService> optionalEconomy = Sponge.getServiceManager().provide(EconomyService.class);
 
-			if (optionalEconomy.isPresent()) {
-				EconomyService economyService = optionalEconomy.get();
+				if (optionalEconomy.isPresent()) {
+					EconomyService economyService = optionalEconomy.get();
 
-				UniqueAccount account = economyService.getOrCreateAccount(player.getUniqueId()).get();
+					UniqueAccount account = economyService.getOrCreateAccount(player.getUniqueId()).get();
 
-				BigDecimal balance = account.getBalance(economyService.getDefaultCurrency());
-				
-				if(balance.compareTo(BigDecimal.valueOf(kit.getPrice())) > 0) {
-					player.sendMessage(Text.of(TextColors.RED, "You do not have enough money. Require $", kit.getPrice()));
-					event.setCancelled(true);
-					return;
+					BigDecimal balance = account.getBalance(economyService.getDefaultCurrency());
+					
+					if(balance.compareTo(BigDecimal.valueOf(kit.getPrice())) > 0) {
+						player.sendMessage(Text.of(TextColors.RED, "You do not have enough money. Require $", kit.getPrice()));
+						event.setCancelled(true);
+						return;
+					}
 				}
 			}
 		}
 
-		Optional<Map<String, KitUsage>> optionalList = player.get(Keys.KIT_USAGES);
+
+		Optional<PlayerData> optionalList = player.get(PlayerData.class);
 
 		Map<String, KitUsage> list = new HashMap<>();
 		
 		if (optionalList.isPresent()) {
-			list = optionalList.get();
+			list = optionalList.get().asMap();
 		}
 
-		KitUsage kitUsage;
-		
 		if (list.containsKey(kit.getName())) {
-			kitUsage = list.get(kit.getName());
+			KitUsage kitUsage = list.get(kit.getName());
 			
-			Date date = kitUsage.getDate();
-			
-			long timeSince = TimeUnit.MILLISECONDS.toSeconds(new Date().getTime() - date.getTime());
-			long waitTime = kit.getCooldown();
-			
-			if(waitTime - timeSince > 0) {	
-				player.sendMessage(Text.of(TextColors.RED, Resource.getReadableTime(waitTime - timeSince)));
-				event.setCancelled(true);
-				return;
-			}
-			
-			if(kit.getLimit() > 0) {
-				if(kitUsage.getTimesUsed() >= kit.getLimit()) {
-					player.sendMessage(Text.of(TextColors.RED, "You've reached the max number of this kit you can get."));
+			if(!player.hasPermission("easykits.override.cooldown")) {
+				Date date = kitUsage.getDate();
+				
+				long timeSince = TimeUnit.MILLISECONDS.toSeconds(new Date().getTime() - date.getTime());
+				long waitTime = kit.getCooldown();
+				
+				if(waitTime - timeSince > 0) {	
+					player.sendMessage(Text.of(TextColors.RED, "You must wait ", Resource.getReadableTime(waitTime - timeSince)));
 					event.setCancelled(true);
 					return;
 				}
 			}
-			
-			kitUsage.setDate(new Date());
-			kitUsage.setTimesUsed(kitUsage.getTimesUsed() + 1);
+
+			if(!player.hasPermission("easykits.override.limit")) {
+				if(kit.getLimit() > 0) {
+					if(kitUsage.getTimesUsed() >= kit.getLimit()) {
+						player.sendMessage(Text.of(TextColors.RED, "You've reached the max number of this kit you can get."));
+						event.setCancelled(true);
+						return;
+					}
+				}
+			}
 		}
 	}
 	
@@ -185,6 +188,16 @@ public class EventManager {
 			}
 			Kit kit = optionalKit.get();
 			
+			boolean checks = true;
+			
+			Optional<Text> line3 = event.getText().get(2);
+			
+			if(line3.isPresent()) {
+				if(line3.get().toPlain().equalsIgnoreCase("true") || line3.get().toPlain().equalsIgnoreCase("false")) {
+					checks = Boolean.parseBoolean(line3.get().toPlain());
+				}
+			}
+			
 			List<Text> lines = new ArrayList<>();
 
 			lines.add(Text.of(TextColors.BLUE, "[Kit]"));
@@ -195,38 +208,62 @@ public class EventManager {
 			}
 
 			event.getText().setElements(lines);
+			
+			event.getTargetTile().offer(new KitInfoData(new KitInfo(kit.getName(), checks)));
 		}
 	}
 	
 	@Listener
-	public void onInteractEventSecondary(InteractBlockEvent.Secondary event, @Root Player player) {
-		BlockSnapshot snapshot = event.getTargetBlock();
+	public void onInteractEventSecondaryBook(InteractBlockEvent.Secondary event, @Root Player player) {
+		Optional<ItemStack > optionalItemStack = player.getItemInHand(HandTypes.MAIN_HAND);
 		
-		if (!(snapshot.getState().getType().equals(BlockTypes.WALL_SIGN) || snapshot.getState().getType().equals(BlockTypes.STANDING_SIGN))) {
+		if(!optionalItemStack.isPresent()) {
 			return;
 		}
-
-		Optional<List<Text>> optionalLines = snapshot.getLocation().get().get(org.spongepowered.api.data.key.Keys.SIGN_LINES);
-
-		if(!optionalLines.isPresent()) {
-			return;
-		}
-		List<Text> lines = optionalLines.get();
+		Optional<KitInfoData> optionalKitInfo = optionalItemStack.get().get(KitInfoData.class);
 		
-		if(!lines.get(0).toPlain().equalsIgnoreCase("[kit]")) {
+		if(!optionalKitInfo.isPresent()) {
 			return;
 		}
-
-		if(lines.size() < 1) {
-			return;
-		}
-		String name = lines.get(1).toPlain();
+		KitInfo kitInfo = optionalKitInfo.get().kitInfo().get();
+		
 		KitService kitService = Sponge.getServiceManager().provideUnchecked(KitService.class);
 
-		Optional<Kit> optionalKit = kitService.getKit(name);
+		Optional<Kit> optionalKit = kitService.getKit(kitInfo.getKitName());
 		
 		if(!optionalKit.isPresent()) {
-			player.sendMessage(Text.of(TextColors.RED, name, " does not exist"));
+			player.sendMessage(Text.of(TextColors.RED, kitInfo.getKitName(), " does not exist"));
+			return;
+		}
+		Kit kit = optionalKit.get();
+		
+		if(kitInfo.doChecks()) {
+			if(!player.hasPermission("easykits.kit." + kit.getName())) {
+				player.sendMessage(Text.of(TextColors.RED, "You do not have permission to get ", kit.getName()));
+				return;
+			}
+		}
+		
+		kit.open(player, kitInfo.doChecks());
+	}
+	
+	@Listener
+	public void onInteractEventSecondarySign(InteractBlockEvent.Secondary event, @Root Player player) {
+		BlockSnapshot snapshot = event.getTargetBlock();
+
+		Optional<ImmutableKitInfoData> optionalKitInfo = snapshot.get(ImmutableKitInfoData.class);
+		
+		if(!optionalKitInfo.isPresent()) {
+			return;
+		}
+		KitInfo kitInfo = optionalKitInfo.get().kitInfo().get();
+
+		KitService kitService = Sponge.getServiceManager().provideUnchecked(KitService.class);
+
+		Optional<Kit> optionalKit = kitService.getKit(kitInfo.getKitName());
+		
+		if(!optionalKit.isPresent()) {
+			player.sendMessage(Text.of(TextColors.RED, kitInfo.getKitName(), " does not exist"));
 			return;
 		}
 		Kit kit = optionalKit.get();
@@ -234,50 +271,41 @@ public class EventManager {
 		String action = ConfigManager.get(Main.getPlugin()).getConfig().getNode("options", "sign-action").getString();
 		
 		if(action.equalsIgnoreCase("view")) {
-			CMDView.open(player, kit);
+			kit.open(player, kitInfo.doChecks());
 		}else if (action.equalsIgnoreCase("get")) {
 			KitEvent.Get kitEvent = new KitEvent.Get(kit, Cause.of(EventContext.builder().add(EventContextKeys.PLAYER, player).build(), player));
 
 			if (!Sponge.getEventManager().post(kitEvent)) {
-				if(!kitEvent.getKitService().setKit(player, kitEvent.getKit(), true)) {
+				if(!kitEvent.getKitService().setKit(player, kitEvent.getKit(), kitInfo.doChecks())) {
 					player.sendMessage(Text.of(TextColors.RED, "Could not give kit. Possibly need more inventory space."));
 				}
 			}
+		}else if (action.equalsIgnoreCase("book")) {
+			ItemStack itemStack = kit.getBook(kitInfo.doChecks());
+	
+			PlayerInventory inv = player.getInventory().query(QueryOperationTypes.INVENTORY_TYPE.of(PlayerInventory.class));
+			
+			if(!inv.getHotbar().offer(itemStack).getType().equals(Type.SUCCESS)) {
+				if(!inv.getMainGrid().offer(itemStack).getType().equals(Type.SUCCESS)) {
+					player.sendMessage(Text.of(TextColors.RED, "Your inventory does not have enough space"));
+				}
+			}
 		} else {
-			player.sendMessage(Text.of(TextColors.RED, "'sign-action' node in config is incorrect. Should be 'view' or 'get'"));
+			player.sendMessage(Text.of(TextColors.RED, "'sign-action' node in config is incorrect. Should be 'view' 'get' or 'book'"));
 		}
 	}
 	
-	@Listener(order = Order.PRE)
+	@Listener
 	public void onChangeBlockEventBreak(ChangeBlockEvent.Break event, @Root Player player) {
 		for(Transaction<BlockSnapshot> transaction : event.getTransactions()) {
 			BlockSnapshot snapshot = transaction.getOriginal();
+
+			Optional<ImmutableKitInfoData> optionalKitInfo = snapshot.get(ImmutableKitInfoData.class);
 			
-			if (!(snapshot.getState().getType().equals(BlockTypes.WALL_SIGN) || snapshot.getState().getType().equals(BlockTypes.STANDING_SIGN))) {
+			if(!optionalKitInfo.isPresent()) {
 				return;
 			}
 
-			Optional<Location<World>> optionalLocation = snapshot.getLocation();
-
-			if (!optionalLocation.isPresent()) {
-				continue;
-			}
-			Location<World> location = optionalLocation.get();
-
-			// STRUGGLING TO THE GET SIGN LINES BEFORE DESTRUCTION..CURRENTLY BROKEN
-			
-			Optional<List<Text>> optionalLines = location.get(org.spongepowered.api.data.key.Keys.SIGN_LINES);
-
-			if(!optionalLines.isPresent()) {
-				continue;
-			}
-			System.out.println("LINES");
-			List<Text> lines = optionalLines.get();
-			
-			if(!lines.get(0).toPlain().equalsIgnoreCase("[kit]")) {
-				continue;
-			}
-			System.out.println("KIT");
 			if(!player.hasPermission("easykits.sign.break")) {
 				player.sendMessage(Text.of(TextColors.RED, "You do not have permission to break this kit sign"));
 				transaction.setValid(false);
@@ -322,31 +350,8 @@ public class EventManager {
 		Inventory inventory = builder.listener(ClickInventoryEvent.class, new KitBookHandler()).build(Main.getPlugin());
 		
 		for(Entry<String, Kit> entry : list.entrySet()) {
-			
-			
-			if(player.hasPermission("easykits.kit." + entry.getKey())) {
-				Kit kit = entry.getValue();
-				List<Text> lore = new ArrayList<>();
-				
-				if(kit.getPrice() > 0) {
-					lore.add(Text.of(TextColors.GREEN, "Price: $", new DecimalFormat(".##").format(kit.getPrice())));
-				}
-			
-				if(kit.getLimit() > 0) {
-					lore.add(Text.of(TextColors.GREEN, "Limit: ", TextColors.WHITE, kit.getLimit()));
-				}
-				
-				if(kit.getCooldown() > 0) {
-					lore.add(Text.of(TextColors.GREEN, "Cooldown: ", TextColors.WHITE, Resource.getReadableTime(kit.getCooldown())));
-				}
-				
-				lore.add(Text.of("Click here to view kit"));
-				
-				ItemStack itemStack = ItemStack.builder().itemType(ItemTypes.BOOK)
-						.add(org.spongepowered.api.data.key.Keys.ITEM_LORE, lore)
-						.add(org.spongepowered.api.data.key.Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, entry.getKey())).build();
-				
-				inventory.set(itemStack);
+			if(player.hasPermission("easykits.kit." + entry.getValue().getName())) {
+				inventory.offer(entry.getValue().getBook(true));
 			}
 		}
 		

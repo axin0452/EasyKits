@@ -138,7 +138,7 @@ public class PlayerData extends AbstractMappedData<String, KitUsage, PlayerData,
 				}
 				return Optional.of(new PlayerData(kitUsageList));
 			}
-			return Optional.empty();
+			return Optional.of(new PlayerData());
 		}
 
 		@Override

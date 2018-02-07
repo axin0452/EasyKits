@@ -24,10 +24,12 @@ import com.gmail.trentech.easykits.kit.KitService;
 public class KitViewHandler implements Consumer<ClickInventoryEvent> {
 
 	private Kit kit;
+	private boolean checks;
 	private KitService kitService;
 	
-	public KitViewHandler(Kit kit) {
+	public KitViewHandler(Kit kit, boolean checks) {
 		this.kit = kit;
+		this.checks = checks;
 		this.kitService = Sponge.getServiceManager().provideUnchecked(KitService.class);
 	}
 	
@@ -48,7 +50,7 @@ public class KitViewHandler implements Consumer<ClickInventoryEvent> {
 					KitEvent.Get kitEvent = new KitEvent.Get(kit, Cause.of(EventContext.builder().add(EventContextKeys.PLAYER, player).build(), player));
 
 					if (!Sponge.getEventManager().post(kitEvent)) {
-						if(!kitEvent.getKitService().setKit(player, kit, true)) {
+						if(!kitEvent.getKitService().setKit(player, kit, checks)) {
 							player.sendMessage(Text.of(TextColors.RED, "Could not give kit. Possibly need more inventory space."));
 						}
 					}				

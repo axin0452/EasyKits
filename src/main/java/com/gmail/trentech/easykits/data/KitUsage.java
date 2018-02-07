@@ -29,6 +29,16 @@ public class KitUsage implements DataSerializable {
 		this.timesUsed = timesUsed;
 		this.date = date;
 	}
+	
+	public KitUsage(String kitName) {
+		this.kitName = kitName;
+		this.timesUsed = 0;
+		try {
+			date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("2000-01-01 12:00:00");
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+	}
 
 	public String getKitName() {
 		return kitName;

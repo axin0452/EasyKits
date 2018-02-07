@@ -17,6 +17,7 @@ import com.gmail.trentech.easykits.commands.delete.CMDDelete;
 import com.gmail.trentech.easykits.commands.delete.CMDYes;
 import com.gmail.trentech.easykits.commands.elements.KitElement;
 import com.gmail.trentech.easykits.commands.reset.CMDAll;
+import com.gmail.trentech.easykits.commands.reset.CMDReset;
 
 public class Commands {
 
@@ -47,6 +48,8 @@ public class Commands {
 	
 	private CommandSpec cmdBook = CommandSpec.builder()
 		    .permission("easykits.cmd.kit.book")
+		    .arguments(
+		    		GenericArguments.optional(new KitElement(Text.of("kit"))))
 		    .executor(new CMDBook())
 		    .build();
 	
@@ -118,11 +121,13 @@ public class Commands {
 			.child(cmdResetLimit, "limit", "l")
 			.child(cmdResetCooldown, "cooldown", "c")
 			.child(cmdResetAll, "all", "a")
-			.executor(new CMDKit())
+			.executor(new CMDReset())
 			.build();
 	
 	public CommandSpec cmdKit = CommandSpec.builder()
 			.permission("easykits.cmd.kit")
+		    .arguments(
+		    		GenericArguments.optional(new KitElement(Text.of("kit"))))
 			.child(cmdPrice, "price", "p")
 			.child(cmdLimit, "limit", "l")
 			.child(cmdCooldown, "cooldown", "cd")

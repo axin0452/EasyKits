@@ -20,11 +20,6 @@ public class CMDCooldown implements CommandExecutor {
 	@Override
 	public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
 		Help help = Help.get("kit cooldown").get();
-		
-		if (args.hasAny("help")) {			
-			help.execute(src);
-			return CommandResult.empty();
-		}
 
 		if (!args.hasAny("kit")) {
 			throw new CommandException(Text.builder().onClick(TextActions.executeCallback(help.execute())).append(help.getUsageText()).build(), false);
@@ -34,12 +29,12 @@ public class CMDCooldown implements CommandExecutor {
 		if (!args.hasAny("cooldown")) {
 			throw new CommandException(Text.builder().onClick(TextActions.executeCallback(help.execute())).append(help.getUsageText()).build(), false);
 		}
-		String coold = args.<String>getOne("cooldown").get();
+		String time = args.<String>getOne("cooldown").get();
 		
-		if(!isValid(coold.split(","))) {
+		if(!isValid(time)) {
 			throw new CommandException(Text.builder().onClick(TextActions.executeCallback(help.execute())).append(help.getUsageText()).build(), false);
 		}
-		long cooldown = getTimeInSeconds(coold);
+		long cooldown = getTimeInSeconds(time);
 		
 		kit.setCooldown(cooldown);
 		
@@ -53,27 +48,36 @@ public class CMDCooldown implements CommandExecutor {
 	}
 	
 	public static long getTimeInSeconds(String time){
-		String[] times = time.split(",");
+		if(time.equalsIgnoreCase("0")) {
+			return 0;
+		}
+		
 		long seconds = 0;
-		for(String t : times){
-			if(t.matches("(\\d+)[s]$")){
-				seconds = Integer.parseInt(t.replace("s", "")) + seconds;
-			}else if(t.matches("(\\d+)[m]$")){
-				seconds = (Integer.parseInt(t.replace("m", "")) * 60) + seconds;
-			}else if(t.matches("(\\d+)[h]$")){
-				seconds = (Integer.parseInt(t.replace("h", "")) * 3600) + seconds;
-			}else if(t.matches("(\\d+)[d]$")){
-				seconds = (Integer.parseInt(t.replace("d", "")) * 86400) + seconds;
-			}else if(t.matches("(\\d+)[w]$")){
-				seconds = (Integer.parseInt(t.replace("w", "")) * 604800) + seconds;
+		
+		for(String arg : time.split(",")){
+			if(arg.matches("(\\d+)[s]$")){
+				seconds = Integer.parseInt(arg.replace("s", "")) + seconds;
+			}else if(arg.matches("(\\d+)[m]$")){
+				seconds = (Integer.parseInt(arg.replace("m", "")) * 60) + seconds;
+			}else if(arg.matches("(\\d+)[h]$")){
+				seconds = (Integer.parseInt(arg.replace("h", "")) * 3600) + seconds;
+			}else if(arg.matches("(\\d+)[d]$")){
+				seconds = (Integer.parseInt(arg.replace("d", "")) * 86400) + seconds;
+			}else if(arg.matches("(\\d+)[w]$")){
+				seconds = (Integer.parseInt(arg.replace("w", "")) * 604800) + seconds;
 			}
 		}
 		return seconds;
 	}
 	
-	private static boolean isValid(String[] args){
-		int loop = 0;	
-		for(String arg : args) {
+	private static boolean isValid(String time){
+		if(time.equalsIgnoreCase("0")) {
+			return true;
+		}
+		
+		int loop = 0;
+		
+		for(String arg : time.split(",")) {
 			if(arg.matches("(\\d+)[w]$") && loop == 0) {
 				
 			}else if(arg.matches("(\\d+)[d]$") && (loop == 0 || loop == 1)) {
@@ -84,8 +88,6 @@ public class CMDCooldown implements CommandExecutor {
 				
 			}else if(arg.matches("(\\d+)[s]$") && (loop == 0 || loop == 1 || loop == 2 || loop == 3 || loop == 4)) {
 				
-			}else if(arg.equalsIgnoreCase("0") && args.length == 1) {
-				return true;
 			}else{
 				return false;
 			}

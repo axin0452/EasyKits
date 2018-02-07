@@ -24,11 +24,6 @@ public class CMDAll implements CommandExecutor {
 	@Override
 	public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
 		Help help = Help.get("kit reset all").get();
-		
-		if (args.hasAny("help")) {			
-			help.execute(src);
-			return CommandResult.empty();
-		}
 
 		if (!args.hasAny("kit")) {
 			throw new CommandException(Text.builder().onClick(TextActions.executeCallback(help.execute())).append(help.getUsageText()).build(), false);

@@ -15,7 +15,11 @@ public class Keys {
 	private static final TypeToken<Value<KitUsage>> KIT_USAGE_TOKEN = new TypeToken<Value<KitUsage>>() {
 		private static final long serialVersionUID = -1;
 	};
-
+	private static final TypeToken<Value<KitInfo>> KIT_INFO_TOKEN = new TypeToken<Value<KitInfo>>() {
+		private static final long serialVersionUID = -1;
+	};
+	
 	public static final Key<Value<KitUsage>> KIT_USAGE = Key.builder().type(KIT_USAGE_TOKEN).id("kit_usage").name("kit_usage").query(DataQuery.of("kit_usage")).build();
-	public static final Key<MapValue<String, KitUsage>> KIT_USAGES = Key.builder().type(KIT_USAGES_MAP__TOKEN).id("portals").name("portals").query(DataQuery.of("portals")).build();
+	public static final Key<Value<KitInfo>> KIT_INFO = Key.builder().type(KIT_INFO_TOKEN).id("kit_info").name("kit_info").query(DataQuery.of("kit_info")).build();	
+	public static final Key<MapValue<String, KitUsage>> KIT_USAGES = Key.builder().type(KIT_USAGES_MAP__TOKEN).id("kits").name("kits").query(DataQuery.of("kits")).build();
 }

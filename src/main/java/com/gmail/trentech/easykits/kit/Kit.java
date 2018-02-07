@@ -5,31 +5,51 @@ import static org.spongepowered.api.data.DataQuery.of;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Consumer;
 import java.util.Optional;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.DataQuery;
 import org.spongepowered.api.data.DataSerializable;
 import org.spongepowered.api.data.DataView;
+import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.data.persistence.AbstractDataBuilder;
 import org.spongepowered.api.data.persistence.DataFormats;
 import org.spongepowered.api.data.persistence.InvalidDataException;
 import org.spongepowered.api.data.persistence.InvalidDataFormatException;
 import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.event.item.inventory.ClickInventoryEvent;
+import org.spongepowered.api.item.ItemTypes;
+import org.spongepowered.api.item.enchantment.Enchantment;
+import org.spongepowered.api.item.enchantment.EnchantmentTypes;
 import org.spongepowered.api.item.inventory.Inventory;
+import org.spongepowered.api.item.inventory.InventoryArchetypes;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.Slot;
 import org.spongepowered.api.item.inventory.entity.PlayerInventory;
+import org.spongepowered.api.item.inventory.property.InventoryDimension;
+import org.spongepowered.api.item.inventory.property.InventoryTitle;
 import org.spongepowered.api.item.inventory.query.QueryOperationTypes;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
+
+import com.gmail.trentech.easykits.Main;
+import com.gmail.trentech.easykits.data.KitInfo;
+import com.gmail.trentech.easykits.data.KitInfoData;
+import com.gmail.trentech.easykits.events.KitViewHandler;
+import com.gmail.trentech.easykits.utils.Resource;
 
 public class Kit implements DataSerializable {
 
@@ -233,6 +253,120 @@ public class Kit implements DataSerializable {
 		this.grid.remove(slot);
 	}
 
+	public ItemStack getBook(boolean check) {
+		List<Text> lore = new ArrayList<>();
+		
+		lore.add(Text.of(TextColors.GREEN, "Name: ", TextColors.WHITE, getName()));
+		
+		if(getPrice() > 0) {
+			lore.add(Text.of(TextColors.GREEN, "Price: ", TextColors.WHITE, "$", new DecimalFormat(".##").format(getPrice())));
+		}
+	
+		if(getLimit() > 0) {
+			lore.add(Text.of(TextColors.GREEN, "Limit: ", TextColors.WHITE, getLimit()));
+		}
+		
+		if(getCooldown() > 0) {
+			lore.add(Text.of(TextColors.GREEN, "Cooldown: ", TextColors.WHITE, Resource.getReadableTime(getCooldown())));
+		}
+		List<Enchantment> enchantment = new ArrayList<>();
+		enchantment.add(Enchantment.builder().type(EnchantmentTypes.INFINITY).level(EnchantmentTypes.INFINITY.getMinimumLevel()).build());
+		
+		return ItemStack.builder().itemType(ItemTypes.BOOK)
+				.add(org.spongepowered.api.data.key.Keys.ITEM_LORE, lore)
+				.add(Keys.ITEM_ENCHANTMENTS, enchantment)
+				.add(Keys.HIDE_ENCHANTMENTS, true)
+				.add(org.spongepowered.api.data.key.Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Kit"))
+				.itemData(new KitInfoData(new KitInfo(getName(), check))).build();
+	}
+	
+	public Consumer<CommandSource> viewKit(boolean checks) {
+		return (CommandSource src) -> {
+			open(((Player) src), checks);
+		};
+	}
+	
+	public void open(Player player, boolean checks) {
+		Inventory inventory = Inventory.builder().of(InventoryArchetypes.DOUBLE_CHEST)
+				.property(InventoryDimension.PROPERTY_NAME, new InventoryDimension(9, 5))
+				.property(InventoryTitle.PROPERTY_NAME, InventoryTitle.of(Text.of("Kit: " + getName())))
+				.listener(ClickInventoryEvent.class, new KitViewHandler(this, checks))
+				.build(Main.getPlugin());
+
+		int i = 0;
+		for (Inventory slot : inventory.slots()) {
+			if (i < 27) {
+				if (getGrid().containsKey(i)) {
+					slot.set(getGrid().get(i));
+				}
+			} else if (i < 36) {
+				if (getHotbar().containsKey(i - 27)) {
+					slot.set(getHotbar().get(i - 27));
+				}
+			} else {
+				if (i - 36 == 0) {
+					Optional<ItemStack> helmet = getHelmet();
+
+					if (helmet.isPresent()) {
+						slot.set(helmet.get());
+					}
+				} else if(i - 36 == 1) {
+					Optional<ItemStack> chestPlate = getChestPlate();
+
+					if (chestPlate.isPresent()) {
+						slot.set(chestPlate.get());
+					}
+				} else if(i - 36 == 2) {
+					Optional<ItemStack> leggings = getLeggings();
+
+					if (leggings.isPresent()) {
+						slot.set(leggings.get());
+					}
+				} else if(i - 36 == 3) {
+					Optional<ItemStack> boots = getBoots();
+
+					if (boots.isPresent()) {
+						slot.set(boots.get());
+					}
+				} else if(i - 36 == 4) {
+					Optional<ItemStack> offHand = getOffHand();
+					
+					if(offHand.isPresent()) {
+						slot.set(offHand.get());
+					}
+				} else {
+					if(i - 36 == 5) {
+						slot.set(ItemStack.builder().itemType(ItemTypes.BARRIER).add(Keys.DISPLAY_NAME, Text.of(TextColors.GREEN, "Price: $", TextColors.WHITE, new DecimalFormat(".##").format(getPrice()))).build());
+					}
+					if(i - 36 == 6) {
+						slot.set(ItemStack.builder().itemType(ItemTypes.BARRIER).add(Keys.DISPLAY_NAME, Text.of(TextColors.GREEN, "Limit: ", TextColors.WHITE, getLimit())).build());
+					}
+					if(i - 36 == 7) {
+						slot.set(ItemStack.builder().itemType(ItemTypes.BARRIER).add(Keys.DISPLAY_NAME, Text.of(TextColors.GREEN, "Cooldown: ", TextColors.WHITE, Resource.getReadableTime(getCooldown()))).build());
+					}
+					if(i - 36 == 8) {
+						List<Text> lore = new ArrayList<>();
+						lore.add(Text.of("Click here to get kit"));
+						
+						List<Enchantment> enchantment = new ArrayList<>();
+						enchantment.add(Enchantment.builder().type(EnchantmentTypes.INFINITY).level(EnchantmentTypes.INFINITY.getMinimumLevel()).build());
+						
+						ItemStack itemStack = ItemStack.builder().itemType(ItemTypes.NETHER_STAR)
+								.add(Keys.ITEM_LORE, lore)
+								.add(Keys.ITEM_ENCHANTMENTS, enchantment)
+								.add(Keys.HIDE_ENCHANTMENTS, true)
+								.add(org.spongepowered.api.data.key.Keys.DISPLAY_NAME, Text.of(TextColors.GREEN, "Get Kit")).build();
+						
+						slot.set(itemStack);
+					}
+				}
+			}
+
+			i++;
+		}
+		player.openInventory(inventory);
+	}
+	
 	@Override
 	public int getContentVersion() {
 		return 1;

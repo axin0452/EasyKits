@@ -10,6 +10,9 @@ import java.util.concurrent.TimeUnit;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.cause.EventContext;
+import org.spongepowered.api.event.cause.EventContextKeys;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.entity.PlayerInventory;
@@ -18,8 +21,12 @@ import org.spongepowered.api.item.inventory.transaction.InventoryTransactionResu
 import org.spongepowered.api.service.economy.EconomyService;
 import org.spongepowered.api.service.economy.account.UniqueAccount;
 
+import com.gmail.trentech.easykits.Main;
 import com.gmail.trentech.easykits.data.Keys;
+import com.gmail.trentech.easykits.data.KitInfo;
+import com.gmail.trentech.easykits.data.KitInfoData;
 import com.gmail.trentech.easykits.data.KitUsage;
+import com.gmail.trentech.easykits.data.PlayerData;
 
 public class KitService {
 
@@ -44,18 +51,22 @@ public class KitService {
 	}
 	
 	public boolean updateUsage(Kit kit, Player player) {
-		if(kit.getPrice() > 0) {
-			Optional<EconomyService> optionalEconomy = Sponge.getServiceManager().provide(EconomyService.class);
+		if(!player.hasPermission("easykits.override.price")) {
+			if(kit.getPrice() > 0) {
+				Optional<EconomyService> optionalEconomy = Sponge.getServiceManager().provide(EconomyService.class);
 
-			if (optionalEconomy.isPresent()) {
-				EconomyService economyService = optionalEconomy.get();
+				if (optionalEconomy.isPresent()) {
+					EconomyService economyService = optionalEconomy.get();
 
-				UniqueAccount account = economyService.getOrCreateAccount(player.getUniqueId()).get();
+					UniqueAccount account = economyService.getOrCreateAccount(player.getUniqueId()).get();
 
-				BigDecimal balance = account.getBalance(economyService.getDefaultCurrency());
-				
-				if(balance.compareTo(BigDecimal.valueOf(kit.getPrice())) > 0) {
-					return false;
+					BigDecimal balance = account.getBalance(economyService.getDefaultCurrency());
+					
+					if(balance.compareTo(BigDecimal.valueOf(kit.getPrice())) > 0) {
+						return false;
+					}
+					
+					account.withdraw(economyService.getDefaultCurrency(), BigDecimal.valueOf(kit.getPrice()), Cause.of(EventContext.builder().add(EventContextKeys.PLUGIN, Main.getPlugin()).build(), Main.getPlugin()));
 				}
 			}
 		}
@@ -72,30 +83,37 @@ public class KitService {
 		
 		if (list.containsKey(kit.getName())) {
 			kitUsage = list.get(kit.getName());
-			
-			Date date = kitUsage.getDate();
-			
-			long timeSince = TimeUnit.MILLISECONDS.toSeconds(new Date().getTime() - date.getTime());
-			long waitTime = kit.getCooldown();
-			
-			if(waitTime - timeSince > 0) {	
-				return false;
+		} else {
+			kitUsage = new KitUsage(kit.getName());
+		}
+		
+		if(!player.hasPermission("easykits.override.price")) {
+			if(kit.getCooldown() > 0) {
+				Date date = kitUsage.getDate();
+				
+				long timeSince = TimeUnit.MILLISECONDS.toSeconds(new Date().getTime() - date.getTime());
+				long waitTime = kit.getCooldown();
+				
+				if(waitTime - timeSince > 0) {	
+					return false;
+				}
+				
+				kitUsage.setDate(new Date());
 			}
-			
+		}
+
+		if(!player.hasPermission("easykits.override.limit")) {
 			if(kit.getLimit() > 0) {
 				if(kitUsage.getTimesUsed() >= kit.getLimit()) {
 					return false;
 				}
+				
+				kitUsage.setTimesUsed(kitUsage.getTimesUsed() + 1);
 			}
-			
-			kitUsage.setDate(new Date());
-			kitUsage.setTimesUsed(kitUsage.getTimesUsed() + 1);
-		} else {
-			kitUsage = new KitUsage(kit.getName(), 1, new Date());
 		}
-		
+
 		list.put(kit.getName(), kitUsage);
-		player.offer(Keys.KIT_USAGES, list);
+		player.offer(new PlayerData(list));
 		
 		return true;
 	}
@@ -227,8 +245,24 @@ public class KitService {
 				restoreInventory(player, backup);
 				return false;
 			}
+		}	
+		
+		Optional<ItemStack> optionalItemStack = player.getItemInHand(HandTypes.MAIN_HAND);
+		
+		if(optionalItemStack.isPresent()) {
+			ItemStack itemStack = optionalItemStack.get();
+			
+			Optional<KitInfoData> optionalKitInfo = itemStack.get(KitInfoData.class);
+			
+			if(optionalKitInfo.isPresent()) {
+				KitInfo kitInfo = optionalKitInfo.get().kitInfo().get();
+				
+				if(kitInfo.getKitName().equalsIgnoreCase(kit.getName())) {
+					player.setItemInHand(HandTypes.MAIN_HAND, ItemStack.empty());	
+				}
+			}
 		}
-
+		
 		return true;
 	}
 	

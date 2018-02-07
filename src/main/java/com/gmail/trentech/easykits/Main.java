@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.ConfigDir;
+import org.spongepowered.api.data.DataRegistration;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
@@ -15,6 +16,12 @@ import org.spongepowered.api.plugin.Dependency;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
 
+import com.gmail.trentech.easykits.data.ImmutableKitInfoData;
+import com.gmail.trentech.easykits.data.ImmutablePlayerData;
+import com.gmail.trentech.easykits.data.Keys;
+import com.gmail.trentech.easykits.data.KitInfo;
+import com.gmail.trentech.easykits.data.KitInfoData;
+import com.gmail.trentech.easykits.data.PlayerData;
 import com.gmail.trentech.easykits.events.EventManager;
 import com.gmail.trentech.easykits.init.Commands;
 import com.gmail.trentech.easykits.init.Common;
@@ -46,6 +53,9 @@ public class Main {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		@SuppressWarnings("unused")
+		Object obj = Keys.KIT_USAGE;
 	}
 
 	@Listener
@@ -57,7 +67,13 @@ public class Main {
 		Sponge.getCommandManager().register(this, new Commands().cmdKit, "kit", "k");
 
 		Sponge.getDataManager().registerBuilder(Kit.class, new Kit.Builder());
-
+		Sponge.getDataManager().registerBuilder(KitInfo.class, new KitInfo.Builder());
+		
+		DataRegistration.builder().dataClass(PlayerData.class).immutableClass(ImmutablePlayerData.class).builder(new PlayerData.Builder()).dataName("player_data")
+			.manipulatorId("player_data").buildAndRegister(Main.getPlugin());
+		DataRegistration.builder().dataClass(KitInfoData.class).immutableClass(ImmutableKitInfoData.class).builder(new KitInfoData.Builder()).dataName("kit_info_data")
+			.manipulatorId("kit_info_data").buildAndRegister(Main.getPlugin());
+	
 		Common.initData();
 		Common.initHelp();
 

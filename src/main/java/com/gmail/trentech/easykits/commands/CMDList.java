@@ -19,26 +19,18 @@ import org.spongepowered.api.text.format.TextColors;
 
 import com.gmail.trentech.easykits.kit.Kit;
 import com.gmail.trentech.easykits.kit.KitService;
-import com.gmail.trentech.pjc.help.Help;
 
 public class CMDList implements CommandExecutor {
 
 	@Override
 	public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-		Help help = Help.get("kit list").get();
-		
-		if (args.hasAny("help")) {			
-			help.execute(src);
-			return CommandResult.empty();
-		}
-		
 		List<Text> list = new ArrayList<>();
 
 		KitService kitService = Sponge.getServiceManager().provideUnchecked(KitService.class);
 
 		for (Entry<String, Kit> entry : kitService.getKits().entrySet()) {
 			if(src.hasPermission("easykits.kit." + entry.getKey())) {
-				list.add(Text.builder().onClick(TextActions.executeCallback(CMDView.viewKit(entry.getValue()))).append(Text.of(TextColors.YELLOW, " - ", entry.getKey())).build());	
+				list.add(Text.builder().onClick(TextActions.executeCallback(entry.getValue().viewKit(true))).append(Text.of(TextColors.YELLOW, " - ", entry.getKey())).build());	
 			}
 		}
 

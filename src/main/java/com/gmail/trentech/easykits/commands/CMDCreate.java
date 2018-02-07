@@ -33,12 +33,7 @@ public class CMDCreate implements CommandExecutor {
 			throw new CommandException(Text.of(TextColors.RED, "Must be a player"), false);
 		}
 		Help help = Help.get("kit create").get();
-		
-		if (args.hasAny("help")) {		
-			help.execute(src);
-			return CommandResult.empty();
-		}
-		
+
 		if (!args.hasAny("name")) {
 			throw new CommandException(Text.builder().onClick(TextActions.executeCallback(help.execute())).append(help.getUsageText()).build(), false);
 		}
