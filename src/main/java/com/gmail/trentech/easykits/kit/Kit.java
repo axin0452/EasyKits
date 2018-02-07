@@ -50,6 +50,7 @@ import com.gmail.trentech.easykits.data.KitInfo;
 import com.gmail.trentech.easykits.data.KitInfoData;
 import com.gmail.trentech.easykits.events.KitViewHandler;
 import com.gmail.trentech.easykits.utils.Resource;
+import com.gmail.trentech.pjc.core.ConfigManager;
 
 public class Kit implements DataSerializable {
 
@@ -257,9 +258,11 @@ public class Kit implements DataSerializable {
 		List<Text> lore = new ArrayList<>();
 		
 		lore.add(Text.of(TextColors.GREEN, "Name: ", TextColors.WHITE, getName()));
-		
+
 		if(getPrice() > 0) {
-			lore.add(Text.of(TextColors.GREEN, "Price: ", TextColors.WHITE, "$", new DecimalFormat(".##").format(getPrice())));
+			String currency = ConfigManager.get(Main.getPlugin()).getConfig().getNode("options", "currency-symbol").getString();
+			
+			lore.add(Text.of(TextColors.GREEN, "Price: ", TextColors.WHITE, currency, new DecimalFormat(".##").format(getPrice())));
 		}
 	
 		if(getLimit() > 0) {
@@ -336,7 +339,9 @@ public class Kit implements DataSerializable {
 					}
 				} else {
 					if(i - 36 == 5) {
-						slot.set(ItemStack.builder().itemType(ItemTypes.BARRIER).add(Keys.DISPLAY_NAME, Text.of(TextColors.GREEN, "Price: $", TextColors.WHITE, new DecimalFormat(".##").format(getPrice()))).build());
+						String currency = ConfigManager.get(Main.getPlugin()).getConfig().getNode("options", "currency-symbol").getString();
+						
+						slot.set(ItemStack.builder().itemType(ItemTypes.BARRIER).add(Keys.DISPLAY_NAME, Text.of(TextColors.GREEN, "Price: ", currency, TextColors.WHITE, new DecimalFormat(".##").format(getPrice()))).build());
 					}
 					if(i - 36 == 6) {
 						slot.set(ItemStack.builder().itemType(ItemTypes.BARRIER).add(Keys.DISPLAY_NAME, Text.of(TextColors.GREEN, "Limit: ", TextColors.WHITE, getLimit())).build());

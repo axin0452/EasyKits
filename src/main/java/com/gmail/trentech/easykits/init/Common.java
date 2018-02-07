@@ -156,6 +156,9 @@ public class Common {
 		if (config.getNode("options", "default-price").isVirtual()) {
 			config.getNode("options", "default-price").setValue(0.0).setComment("Default price when creating kit. 0.0 to disable. Need economy plugin to use this");
 		}
+		if (config.getNode("options", "currency-symbol").isVirtual()) {
+			config.getNode("options", "currency-symbol").setValue("$").setComment("The leading symbol when displaying prices");
+		}
 		if (config.getNode("options", "new-player-kit").isVirtual()) {
 			config.getNode("options", "new-player-kit").setValue("starter").setComment("Kit to give new players.");
 		}			

@@ -116,7 +116,9 @@ public class EventManager {
 					BigDecimal balance = account.getBalance(economyService.getDefaultCurrency());
 					
 					if(balance.compareTo(BigDecimal.valueOf(kit.getPrice())) > 0) {
-						player.sendMessage(Text.of(TextColors.RED, "You do not have enough money. Require $", kit.getPrice()));
+						String currency = ConfigManager.get(Main.getPlugin()).getConfig().getNode("options", "currency-symbol").getString();
+						
+						player.sendMessage(Text.of(TextColors.RED, "You do not have enough money. Require ", currency, kit.getPrice()));
 						event.setCancelled(true);
 						return;
 					}
