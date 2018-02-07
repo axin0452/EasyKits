@@ -206,7 +206,9 @@ public class EventManager {
 			lines.add(Text.of(TextColors.BLACK, kit.getName()));
 				
 			if(kit.getPrice() > 0) {
-				lines.add(Text.of(TextColors.GREEN, kit.getPrice()));
+				String currency = ConfigManager.get(Main.getPlugin()).getConfig().getNode("options", "currency-symbol").getString();
+				
+				lines.add(Text.of(TextColors.GREEN, currency, kit.getPrice()));
 			}
 
 			event.getText().setElements(lines);
@@ -251,6 +253,14 @@ public class EventManager {
 	
 	@Listener
 	public void onInteractEventSecondarySign(InteractBlockEvent.Secondary event, @Root Player player) {
+		Optional<ItemStack > optionalItemStack = player.getItemInHand(HandTypes.MAIN_HAND);
+		
+		if(optionalItemStack.isPresent()) {
+			if(optionalItemStack.get().get(KitInfoData.class).isPresent()) {
+				return;
+			};
+		}
+
 		BlockSnapshot snapshot = event.getTargetBlock();
 
 		Optional<ImmutableKitInfoData> optionalKitInfo = snapshot.get(ImmutableKitInfoData.class);
