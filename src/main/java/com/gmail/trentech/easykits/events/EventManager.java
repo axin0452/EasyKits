@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.spongepowered.api.Sponge;
@@ -340,7 +341,7 @@ public class EventManager {
 		
 		Builder builder = Inventory.builder().of(InventoryArchetypes.DOUBLE_CHEST).property(InventoryTitle.PROPERTY_NAME, InventoryTitle.of(Text.of("Kits:")));
 		
-		HashMap<String, Kit> list = Sponge.getServiceManager().provideUnchecked(KitService.class).getKits();
+		ConcurrentHashMap<String, Kit> list = Sponge.getServiceManager().provideUnchecked(KitService.class).getKits();
 		
 		if(list.size() <= 9) {
 			builder.property(InventoryDimension.PROPERTY_NAME, new InventoryDimension(9, 1));

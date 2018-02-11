@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.spongepowered.api.Sponge;
@@ -34,7 +35,7 @@ public class KitService {
 		return KitDB.get(name);
 	}
 
-	public HashMap<String, Kit> getKits() {
+	public ConcurrentHashMap<String, Kit> getKits() {
 		return KitDB.all();
 	}
 

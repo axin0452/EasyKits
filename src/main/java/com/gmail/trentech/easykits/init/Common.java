@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import com.gmail.trentech.easykits.Main;
+import com.gmail.trentech.easykits.kit.KitDB;
 import com.gmail.trentech.pjc.core.ConfigManager;
 import com.gmail.trentech.pjc.core.SQLManager;
 import com.gmail.trentech.pjc.help.Argument;
@@ -34,6 +35,8 @@ public class Common {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		
+		KitDB.init();
 	}
 	
 	public static void initHelp() {

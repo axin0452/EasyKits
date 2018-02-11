@@ -4,22 +4,22 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.gmail.trentech.easykits.Main;
 import com.gmail.trentech.pjc.core.SQLManager;
 
 public class KitDB {
 
-	public static HashMap<String, Kit> all() {
-		HashMap<String, Kit> map = new HashMap<>();
-
+	private static ConcurrentHashMap<String, Kit> cache = new ConcurrentHashMap<>();
+	
+	public static void init() {
 		try {
 			SQLManager sqlManager = SQLManager.get(Main.getPlugin());
 			Connection connection = sqlManager.getDataSource().getConnection();
 
-			PreparedStatement statement = connection.prepareStatement("SELECT * FROM " + sqlManager.getPrefix("KITS"));
+			PreparedStatement statement = connection.prepareStatement("SELECT * FROM " + sqlManager.getPrefix("SPAWNERS"));
 
 			ResultSet result = statement.executeQuery();
 
@@ -27,74 +27,26 @@ public class KitDB {
 				String name = result.getString("NAME");
 				Kit kit = Kit.deserialize(result.getBytes("DATA"));
 
-				map.put(name, kit);
+				cache.put(name, kit);
 			}
 
 			connection.close();
-			statement.close();
-			result.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-
-		return map;
+	}
+	
+	public static ConcurrentHashMap<String, Kit> all() {
+		return cache;
 	}
 
 	public static boolean exists(String name) {
-		try {
-			SQLManager sqlManager = SQLManager.get(Main.getPlugin());
-			Connection connection = sqlManager.getDataSource().getConnection();
-
-			PreparedStatement statement = connection.prepareStatement("SELECT * FROM " + sqlManager.getPrefix("KITS"));
-
-			ResultSet result = statement.executeQuery();
-
-			while (result.next()) {
-				if (result.getString("NAME").equalsIgnoreCase(name)) {
-					connection.close();
-					statement.close();
-					result.close();
-					
-					return true;
-				}
-			}
-
-			connection.close();
-			statement.close();
-			result.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-
-		return false;
+		return cache.containsKey(name);
 	}
 	
 	public static Optional<Kit> get(String name) {
-		try {
-			SQLManager sqlManager = SQLManager.get(Main.getPlugin());
-			Connection connection = sqlManager.getDataSource().getConnection();
-
-			PreparedStatement statement = connection.prepareStatement("SELECT * FROM " + sqlManager.getPrefix("KITS"));
-
-			ResultSet result = statement.executeQuery();
-
-			while (result.next()) {
-				if (result.getString("NAME").equalsIgnoreCase(name)) {
-					Kit kit = Kit.deserialize(result.getBytes("DATA"));
-					
-					connection.close();
-					statement.close();
-					result.close();
-					
-					return Optional.of(kit);
-				}
-			}
-
-			connection.close();
-			statement.close();
-			result.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
+		if (all().containsKey(name)) {
+			return Optional.of(all().get(name));
 		}
 
 		return Optional.empty();
@@ -120,6 +72,8 @@ public class KitDB {
 
 			connection.close();
 			statement.close();
+			
+			cache.remove(name);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -139,6 +93,8 @@ public class KitDB {
 
 			connection.close();
 			statement.close();
+			
+			cache.put(kit.getName(), kit);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -158,6 +114,8 @@ public class KitDB {
 
 			connection.close();
 			statement.close();
+			
+			cache.put(kit.getName(), kit);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
