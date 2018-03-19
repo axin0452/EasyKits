@@ -19,7 +19,7 @@ public class KitDB {
 			SQLManager sqlManager = SQLManager.get(Main.getPlugin());
 			Connection connection = sqlManager.getDataSource().getConnection();
 
-			PreparedStatement statement = connection.prepareStatement("SELECT * FROM " + sqlManager.getPrefix("SPAWNERS"));
+			PreparedStatement statement = connection.prepareStatement("SELECT * FROM " + sqlManager.getPrefix("KITS"));
 
 			ResultSet result = statement.executeQuery();
 
