@@ -116,7 +116,7 @@ public class Kit implements DataSerializable {
 		}
 
 		i = 0;
-		for (Inventory item : inv.getMain().slots()) {
+		for (Inventory item : inv.getMainGrid().slots()) {
 			Slot slot = (Slot) item;
 
 			Optional<ItemStack> peek = slot.peek();
