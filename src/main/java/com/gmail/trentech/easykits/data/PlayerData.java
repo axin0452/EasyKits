@@ -110,7 +110,7 @@ public class PlayerData extends AbstractMappedData<String, KitUsage, PlayerData,
 	}
 
 	@Override
-	public DataContainer toContainer() {
+	protected DataContainer fillContainer(DataContainer dataContainer) {
 		return super.toContainer().set(KIT_USAGES, getValue());
 	}
 

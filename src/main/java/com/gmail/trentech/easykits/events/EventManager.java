@@ -220,12 +220,7 @@ public class EventManager {
 	
 	@Listener
 	public void onInteractEventSecondaryBook(InteractBlockEvent.Secondary event, @Root Player player) {
-		Optional<ItemStack > optionalItemStack = player.getItemInHand(HandTypes.MAIN_HAND);
-		
-		if(!optionalItemStack.isPresent()) {
-			return;
-		}
-		Optional<KitInfoData> optionalKitInfo = optionalItemStack.get().get(KitInfoData.class);
+		Optional<KitInfoData> optionalKitInfo = player.getItemInHand(HandTypes.MAIN_HAND).get(KitInfoData.class);
 		
 		if(!optionalKitInfo.isPresent()) {
 			return;
@@ -254,14 +249,10 @@ public class EventManager {
 	
 	@Listener
 	public void onInteractEventSecondarySign(InteractBlockEvent.Secondary event, @Root Player player) {
-		Optional<ItemStack > optionalItemStack = player.getItemInHand(HandTypes.MAIN_HAND);
-		
-		if(optionalItemStack.isPresent()) {
-			if(optionalItemStack.get().get(KitInfoData.class).isPresent()) {
-				return;
-			};
+		if(player.getItemInHand(HandTypes.MAIN_HAND).get(KitInfoData.class).isPresent()) {
+			return;
 		}
-
+		
 		BlockSnapshot snapshot = event.getTargetBlock();
 
 		Optional<ImmutableKitInfoData> optionalKitInfo = snapshot.get(ImmutableKitInfoData.class);
@@ -296,10 +287,10 @@ public class EventManager {
 		}else if (action.equalsIgnoreCase("book")) {
 			ItemStack itemStack = kit.getBook(kitInfo.doChecks());
 	
-			PlayerInventory inv = player.getInventory().query(QueryOperationTypes.INVENTORY_TYPE.of(PlayerInventory.class));
+			PlayerInventory inv = (PlayerInventory) player.getInventory().query(QueryOperationTypes.INVENTORY_TYPE.of(PlayerInventory.class));
 			
 			if(!inv.getHotbar().offer(itemStack).getType().equals(Type.SUCCESS)) {
-				if(!inv.getMainGrid().offer(itemStack).getType().equals(Type.SUCCESS)) {
+				if(!inv.getStorage().offer(itemStack).getType().equals(Type.SUCCESS)) {
 					player.sendMessage(Text.of(TextColors.RED, "Your inventory does not have enough space"));
 				}
 			}
@@ -339,25 +330,25 @@ public class EventManager {
 			return;
 		}
 		
-		Builder builder = Inventory.builder().of(InventoryArchetypes.DOUBLE_CHEST).property(InventoryTitle.PROPERTY_NAME, InventoryTitle.of(Text.of("Kits:")));
+		Builder builder = Inventory.builder().of(InventoryArchetypes.DOUBLE_CHEST).property(InventoryTitle.of(Text.of("Kits:")));
 		
 		ConcurrentHashMap<String, Kit> list = Sponge.getServiceManager().provideUnchecked(KitService.class).getKits();
 		
 		if(list.size() <= 9) {
-			builder.property(InventoryDimension.PROPERTY_NAME, new InventoryDimension(9, 1));
+			builder.property(InventoryDimension.of(9, 1));
 		} else if(list.size() <= 18) {
-			builder.property(InventoryDimension.PROPERTY_NAME, new InventoryDimension(9, 2));
+			builder.property(InventoryDimension.of(9, 2));
 		} else if(list.size() <= 27) {
-			builder.property(InventoryDimension.PROPERTY_NAME, new InventoryDimension(9, 3));
+			builder.property(InventoryDimension.of(9, 3));
 		} else if(list.size() <= 36) {
-			builder.property(InventoryDimension.PROPERTY_NAME, new InventoryDimension(9, 4));
+			builder.property(InventoryDimension.of(9, 4));
 		} else if(list.size() <= 45) {
-			builder.property(InventoryDimension.PROPERTY_NAME, new InventoryDimension(9, 5));
+			builder.property(InventoryDimension.of(9, 5));
 		} else if(list.size() <= 54) {
-			builder.property(InventoryDimension.PROPERTY_NAME, new InventoryDimension(9, 6));
+			builder.property(InventoryDimension.of(9, 6));
 		} else {
 			player.sendMessage(Text.of(TextColors.YELLOW, "Could not fit all kits in book"));
-			builder.property(InventoryDimension.PROPERTY_NAME, new InventoryDimension(9, 6));
+			builder.property(InventoryDimension.of(9, 6));
 		}
 		
 		Inventory inventory = builder.listener(ClickInventoryEvent.class, new KitBookHandler()).build(Main.getPlugin());

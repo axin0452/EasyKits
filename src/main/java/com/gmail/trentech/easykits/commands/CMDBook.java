@@ -55,10 +55,10 @@ public class CMDBook implements CommandExecutor {
 			itemStack = kit.getBook(true);
 		}
 
-		PlayerInventory inv = player.getInventory().query(QueryOperationTypes.INVENTORY_TYPE.of(PlayerInventory.class));
+		PlayerInventory inv = (PlayerInventory) player.getInventory().query(QueryOperationTypes.INVENTORY_TYPE.of(PlayerInventory.class));
 		
 		if(!inv.getHotbar().offer(itemStack).getType().equals(Type.SUCCESS)) {
-			if(!inv.getMainGrid().offer(itemStack).getType().equals(Type.SUCCESS)) {
+			if(!inv.getStorage().offer(itemStack).getType().equals(Type.SUCCESS)) {
 				src.sendMessage(Text.of(TextColors.RED, "Your inventory does not have enough space"));
 			}
 		}

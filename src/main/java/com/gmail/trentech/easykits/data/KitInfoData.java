@@ -66,7 +66,7 @@ public class KitInfoData extends AbstractSingleData<KitInfo, KitInfoData, Immuta
 	}
 
 	@Override
-	public DataContainer toContainer() {
+	protected DataContainer fillContainer(DataContainer dataContainer) {
 		return super.toContainer().set(KIT_INFO, getValue());
 	}
 

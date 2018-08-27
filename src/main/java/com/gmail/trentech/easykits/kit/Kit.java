@@ -69,19 +69,19 @@ public class Kit implements DataSerializable {
 	private final static DataQuery PRICE = of("price");
 	
 	private String name;
-	private Optional<ItemStack> offHand = Optional.empty();
-	private Optional<ItemStack> helmet = Optional.empty();
-	private Optional<ItemStack> chestPlate = Optional.empty();
-	private Optional<ItemStack> leggings = Optional.empty();
-	private Optional<ItemStack> boots = Optional.empty();
+	private ItemStack offHand = ItemStack.empty();
+	private ItemStack helmet = ItemStack.empty();
+	private ItemStack chestPlate = ItemStack.empty();
+	private ItemStack leggings = ItemStack.empty();
+	private ItemStack boots = ItemStack.empty();
 	private Map<Integer, ItemStack> hotbar = new HashMap<>();
 	private Map<Integer, ItemStack> grid = new HashMap<>();
 	private long cooldown = 0;
 	private int limit = 0;
 	private double price = 0.0;
 	
-	protected Kit(String name, Optional<ItemStack> offHand, Optional<ItemStack> helmet, Optional<ItemStack> chestPlate, Optional<ItemStack> leggings, 
-			Optional<ItemStack> boots, Map<Integer, ItemStack> hotbar, Map<Integer, ItemStack> grid, long cooldown, int limit, double price) {
+	protected Kit(String name, ItemStack offHand, ItemStack helmet, ItemStack chestPlate, ItemStack leggings, ItemStack boots, 
+			Map<Integer, ItemStack> hotbar, Map<Integer, ItemStack> grid, long cooldown, int limit, double price) {
 		this.name = name;
 		this.offHand = offHand;
 		this.hotbar = hotbar;
@@ -101,29 +101,21 @@ public class Kit implements DataSerializable {
 		this.limit = limit;
 		this.price = price;
 		
-		PlayerInventory inv = player.getInventory().query(QueryOperationTypes.INVENTORY_TYPE.of(PlayerInventory.class));
+		PlayerInventory inv = (PlayerInventory) player.getInventory().query(QueryOperationTypes.INVENTORY_TYPE.of(PlayerInventory.class));
 
 		int i = 0;
 		for (Inventory item : inv.getHotbar().slots()) {
 			Slot slot = (Slot) item;
 
-			Optional<ItemStack> peek = slot.peek();
-
-			if (peek.isPresent()) {
-				addHotbar(i, peek.get());
-			}
+			addHotbar(i, slot.peek());
 			i++;
 		}
 
 		i = 0;
-		for (Inventory item : inv.getMainGrid().slots()) {
+		for (Inventory item : inv.getStorage().slots()) {
 			Slot slot = (Slot) item;
 
-			Optional<ItemStack> peek = slot.peek();
-
-			if (peek.isPresent()) {
-				addGrid(i, peek.get());
-			}
+			addGrid(i, slot.peek());
 			i++;
 		}
 
@@ -166,23 +158,23 @@ public class Kit implements DataSerializable {
 		this.price = price;
 	}
 	
-	public Optional<ItemStack> getOffHand() {
+	public ItemStack getOffHand() {
 		return offHand;
 	}
 
-	public Optional<ItemStack> getHelmet() {
+	public ItemStack getHelmet() {
 		return helmet;
 	}
 
-	public Optional<ItemStack> getChestPlate() {
+	public ItemStack getChestPlate() {
 		return chestPlate;
 	}
 
-	public Optional<ItemStack> getLeggings() {
+	public ItemStack getLeggings() {
 		return leggings;
 	}
 
-	public Optional<ItemStack> getBoots() {
+	public ItemStack getBoots() {
 		return boots;
 	}
 	
@@ -194,47 +186,47 @@ public class Kit implements DataSerializable {
 		return grid;
 	}
 	
-	public void setOffHand(Optional<ItemStack> itemStack) {
+	public void setOffHand(ItemStack itemStack) {
 		this.offHand = itemStack;
 	}
 	
-	public void setHelmet(Optional<ItemStack> helmet) {
-		this.helmet = helmet;
+	public void setHelmet(ItemStack itemStack) {
+		this.helmet = itemStack;
 	}
 
-	public void setChestPlate(Optional<ItemStack> chestPlate) {
-		this.chestPlate = chestPlate;
+	public void setChestPlate(ItemStack itemStack) {
+		this.chestPlate = itemStack;
 	}
 
-	public void setLeggings(Optional<ItemStack> leggings) {
-		this.leggings = leggings;
+	public void setLeggings(ItemStack itemStack) {
+		this.leggings = itemStack;
 	}
 
-	public void setBoots(Optional<ItemStack> boots) {
-		this.boots = boots;
+	public void setBoots(ItemStack itemStack) {
+		this.boots = itemStack;
 	}
 
 	public void addEquipment(int slot, ItemStack itemStack) {
 		if (slot == 0) {
-			this.helmet = Optional.of(itemStack);
+			this.helmet = itemStack;
 		} else if(slot == 1) {
-			this.chestPlate = Optional.of(itemStack);
+			this.chestPlate = itemStack;
 		} else if(slot == 2) {
-			this.leggings = Optional.of(itemStack);
+			this.leggings = itemStack;
 		} else if(slot == 3) {
-			this.boots = Optional.of(itemStack);
+			this.boots = itemStack;
 		}
 	}
 	
 	public void removeEquipment(int slot) {
 		if (slot == 0) {
-			this.helmet = Optional.empty();
+			this.helmet = ItemStack.empty();
 		} else if(slot == 1) {
-			this.chestPlate = Optional.empty();
+			this.chestPlate = ItemStack.empty();
 		} else if(slot == 2) {
-			this.leggings = Optional.empty();
+			this.leggings = ItemStack.empty();
 		} else if(slot == 3) {
-			this.boots = Optional.empty();
+			this.boots = ItemStack.empty();
 		}
 	}
 	
@@ -291,8 +283,8 @@ public class Kit implements DataSerializable {
 	
 	public void open(Player player, boolean checks) {
 		Inventory inventory = Inventory.builder().of(InventoryArchetypes.DOUBLE_CHEST)
-				.property(InventoryDimension.PROPERTY_NAME, new InventoryDimension(9, 5))
-				.property(InventoryTitle.PROPERTY_NAME, InventoryTitle.of(Text.of("Kit: " + getName())))
+				.property(InventoryDimension.of(9, 5))
+				.property(InventoryTitle.of(Text.of("Kit: " + getName())))
 				.listener(ClickInventoryEvent.class, new KitViewHandler(this, checks))
 				.build(Main.getPlugin());
 
@@ -308,35 +300,15 @@ public class Kit implements DataSerializable {
 				}
 			} else {
 				if (i - 36 == 0) {
-					Optional<ItemStack> helmet = getHelmet();
-
-					if (helmet.isPresent()) {
-						slot.set(helmet.get());
-					}
+					slot.set(getHelmet());
 				} else if(i - 36 == 1) {
-					Optional<ItemStack> chestPlate = getChestPlate();
-
-					if (chestPlate.isPresent()) {
-						slot.set(chestPlate.get());
-					}
+					slot.set(getChestPlate());
 				} else if(i - 36 == 2) {
-					Optional<ItemStack> leggings = getLeggings();
-
-					if (leggings.isPresent()) {
-						slot.set(leggings.get());
-					}
+					slot.set(getLeggings());
 				} else if(i - 36 == 3) {
-					Optional<ItemStack> boots = getBoots();
-
-					if (boots.isPresent()) {
-						slot.set(boots.get());
-					}
+					slot.set(getBoots());
 				} else if(i - 36 == 4) {
-					Optional<ItemStack> offHand = getOffHand();
-					
-					if(offHand.isPresent()) {
-						slot.set(offHand.get());
-					}
+					slot.set(getOffHand());
 				} else {
 					if(i - 36 == 5) {
 						String currency = ConfigManager.get(Main.getPlugin()).getConfig().getNode("options", "currency-symbol").getString();
@@ -379,28 +351,10 @@ public class Kit implements DataSerializable {
 
 	@Override
 	public DataContainer toContainer() {
-		DataContainer container = DataContainer.createNew().set(NAME, getName()).set(COOLDOWN, getCooldown()).set(LIMIT, getLimit()).set(PRICE, getPrice());
+		DataContainer container = DataContainer.createNew().set(NAME, getName()).set(COOLDOWN, getCooldown()).set(LIMIT, getLimit()).set(PRICE, getPrice())
+				.set(OFF_HAND, this.offHand.toContainer()).set(HELMET, this.helmet.toContainer()).set(CHEST_PLATE, this.chestPlate.toContainer())
+				.set(LEGGINGS, this.leggings.toContainer()).set(BOOTS, this.boots.toContainer());
 
-		if (this.offHand.isPresent()) {
-			container.set(OFF_HAND, this.offHand.get().toContainer());
-		}
-
-		if (this.helmet.isPresent()) {
-			container.set(HELMET, this.helmet.get().toContainer());
-		}
-
-		if (this.chestPlate.isPresent()) {
-			container.set(CHEST_PLATE, this.chestPlate.get().toContainer());
-		}
-
-		if (this.leggings.isPresent()) {
-			container.set(LEGGINGS, this.leggings.get().toContainer());
-		}
-
-		if (this.boots.isPresent()) {
-			container.set(BOOTS, this.boots.get().toContainer());
-		}
-		
 		if(!this.hotbar.isEmpty()) {
 			List<DataView> hotbarData = new LinkedList<>();
 
@@ -437,35 +391,11 @@ public class Kit implements DataSerializable {
 			int limit = container.getInt(LIMIT).get();
 			double price = container.getDouble(PRICE).get();
 			
-			Optional<ItemStack> offHand = Optional.empty();
-
-			if (container.contains(OFF_HAND)) {
-				offHand = Optional.of(ItemStack.builder().fromContainer(container.getView(OFF_HAND).get()).build());
-			}
-			
-			Optional<ItemStack> helmet = Optional.empty();
-
-			if (container.contains(HELMET)) {
-				helmet = Optional.of(ItemStack.builder().fromContainer(container.getView(HELMET).get()).build());
-			}
-			
-			Optional<ItemStack> chestPlate = Optional.empty();
-
-			if (container.contains(CHEST_PLATE)) {
-				chestPlate = Optional.of(ItemStack.builder().fromContainer(container.getView(CHEST_PLATE).get()).build());
-			}
-			
-			Optional<ItemStack> leggings = Optional.empty();
-
-			if (container.contains(LEGGINGS)) {
-				leggings = Optional.of(ItemStack.builder().fromContainer(container.getView(LEGGINGS).get()).build());
-			}
-			
-			Optional<ItemStack> boots = Optional.empty();
-
-			if (container.contains(BOOTS)) {
-				boots = Optional.of(ItemStack.builder().fromContainer(container.getView(BOOTS).get()).build());
-			}
+			ItemStack offHand = ItemStack.builder().fromContainer(container.getView(OFF_HAND).get()).build();
+			ItemStack helmet = ItemStack.builder().fromContainer(container.getView(HELMET).get()).build();			
+			ItemStack chestPlate = ItemStack.builder().fromContainer(container.getView(CHEST_PLATE).get()).build();
+			ItemStack leggings = ItemStack.builder().fromContainer(container.getView(LEGGINGS).get()).build();
+			ItemStack boots = ItemStack.builder().fromContainer(container.getView(BOOTS).get()).build();
 
 			Map<Integer, ItemStack> hotbar = new HashMap<>();
 

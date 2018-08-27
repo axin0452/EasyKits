@@ -122,15 +122,15 @@ public class KitService {
 	public boolean setKit(Player player, Kit kit, boolean updateUsage) {
 		Kit backup = new Kit("backup", player, 0, 0, 0);
 		
-		PlayerInventory inv = player.getInventory().query(QueryOperationTypes.INVENTORY_TYPE.of(PlayerInventory.class));
+		PlayerInventory inv = (PlayerInventory) player.getInventory().query(QueryOperationTypes.INVENTORY_TYPE.of(PlayerInventory.class));
 
 		Map<Integer, ItemStack> hotbar = kit.getHotbar();
 
 		if (!hotbar.isEmpty()) {
 			int i = 0;
 			for (Inventory slot : inv.getHotbar().slots()) {
-				if (hotbar.containsKey(i)) {
-					if(slot.peek().isPresent()) {
+				if (hotbar.containsKey(i)) {				
+					if(!slot.peek().isEmpty()) {
 						if(!likeStack(hotbar.get(i), inv)) {
 							if(!firstEmpty(hotbar.get(i), inv)) {
 								restoreInventory(player, backup);
@@ -149,9 +149,9 @@ public class KitService {
 
 		if (!grid.isEmpty()) {
 			int i = 0;
-			for (Inventory slot : inv.getMainGrid().slots()) {
+			for (Inventory slot : inv.getStorage().slots()) {
 				if (grid.containsKey(i)) {
-					if(slot.peek().isPresent()) {
+					if(!slot.peek().isEmpty()) {
 						if(!likeStack(grid.get(i), inv)) {
 							if(!firstEmpty(grid.get(i), inv)) {
 								restoreInventory(player, backup);
@@ -166,78 +166,78 @@ public class KitService {
 			}
 		}
 
-		Optional<ItemStack> helmet = kit.getHelmet();
+		ItemStack helmet = kit.getHelmet();
 
-		if (helmet.isPresent()) {
-			if(player.getHelmet().isPresent()) {
-				if(!likeStack(helmet.get(), inv)) {
-					if(!firstEmpty(helmet.get(), inv)) {
+		if (!helmet.isEmpty()) {
+			if(!player.getHelmet().isEmpty()) {
+				if(!likeStack(helmet, inv)) {
+					if(!firstEmpty(helmet, inv)) {
 						restoreInventory(player, backup);
 						return false;
 					}
 				}
 			} else {
-				player.setHelmet(helmet.get());
+				player.setHelmet(helmet);
 			}
 		}
 
-		Optional<ItemStack> chestPlate = kit.getChestPlate();
+		ItemStack chestPlate = kit.getChestPlate();
 
-		if (chestPlate.isPresent()) {			
-			if(player.getChestplate().isPresent()) {
-				if(!likeStack(chestPlate.get(), inv)) {
-					if(!firstEmpty(chestPlate.get(), inv)) {
+		if (!chestPlate.isEmpty()) {			
+			if(!player.getChestplate().isEmpty()) {
+				if(!likeStack(chestPlate, inv)) {
+					if(!firstEmpty(chestPlate, inv)) {
 						restoreInventory(player, backup);
 						return false;
 					}
 				}
 			} else {
-				player.setChestplate(chestPlate.get());
-			}
-		}
-		
-		Optional<ItemStack> leggings = kit.getLeggings();
-
-		if (leggings.isPresent()) {
-			if(player.getLeggings().isPresent()) {
-				if(!likeStack(leggings.get(), inv)) {
-					if(!firstEmpty(leggings.get(), inv)) {
-						restoreInventory(player, backup);
-						return false;
-					}
-				}
-			} else {
-				player.setLeggings(leggings.get());
+				player.setChestplate(chestPlate);
 			}
 		}
 		
-		Optional<ItemStack> boots = kit.getBoots();
+		ItemStack leggings = kit.getLeggings();
 
-		if (boots.isPresent()) {
-			if(player.getBoots().isPresent()) {
-				if(!likeStack(boots.get(), inv)) {
-					if(!firstEmpty(boots.get(), inv)) {
+		if (!leggings.isEmpty()) {
+			if(!player.getLeggings().isEmpty()) {
+				if(!likeStack(leggings, inv)) {
+					if(!firstEmpty(leggings, inv)) {
 						restoreInventory(player, backup);
 						return false;
 					}
 				}
 			} else {
-				player.setBoots(boots.get());
+				player.setLeggings(leggings);
 			}
 		}
 		
-		Optional<ItemStack> offHand = kit.getOffHand();
+		ItemStack boots = kit.getBoots();
 
-		if (offHand.isPresent()) {
-			if(player.getItemInHand(HandTypes.OFF_HAND).isPresent()) {
-				if(!likeStack(offHand.get(), inv)) {
-					if(!firstEmpty(offHand.get(), inv)) {
+		if (!boots.isEmpty()) {
+			if(!player.getBoots().isEmpty()) {
+				if(!likeStack(boots, inv)) {
+					if(!firstEmpty(boots, inv)) {
 						restoreInventory(player, backup);
 						return false;
 					}
 				}
 			} else {
-				player.setItemInHand(HandTypes.OFF_HAND, offHand.get());
+				player.setBoots(boots);
+			}
+		}
+		
+		ItemStack offHand = kit.getOffHand();
+
+		if (!offHand.isEmpty()) {
+			if(!player.getItemInHand(HandTypes.OFF_HAND).isEmpty()) {
+				if(!likeStack(offHand, inv)) {
+					if(!firstEmpty(offHand, inv)) {
+						restoreInventory(player, backup);
+						return false;
+					}
+				}
+			} else {
+				player.setItemInHand(HandTypes.OFF_HAND, offHand);
 			}
 		}
 
@@ -248,29 +248,25 @@ public class KitService {
 			}
 		}	
 		
-		Optional<ItemStack> optionalItemStack = player.getItemInHand(HandTypes.MAIN_HAND);
+		ItemStack itemStack = player.getItemInHand(HandTypes.MAIN_HAND);
 		
-		if(optionalItemStack.isPresent()) {
-			ItemStack itemStack = optionalItemStack.get();
+		Optional<KitInfoData> optionalKitInfo = itemStack.get(KitInfoData.class);
+		
+		if(optionalKitInfo.isPresent()) {
+			KitInfo kitInfo = optionalKitInfo.get().kitInfo().get();
 			
-			Optional<KitInfoData> optionalKitInfo = itemStack.get(KitInfoData.class);
-			
-			if(optionalKitInfo.isPresent()) {
-				KitInfo kitInfo = optionalKitInfo.get().kitInfo().get();
-				
-				if(kitInfo.getKitName().equalsIgnoreCase(kit.getName())) {
-					player.setItemInHand(HandTypes.MAIN_HAND, ItemStack.empty());	
-				}
+			if(kitInfo.getKitName().equalsIgnoreCase(kit.getName())) {
+				player.setItemInHand(HandTypes.MAIN_HAND, ItemStack.empty());	
 			}
 		}
-		
+			
 		return true;
 	}
 	
 	private boolean firstEmpty(ItemStack itemStack, Inventory inventory) {
 		for (Inventory slot : inventory.slots()) {
 
-			if(!slot.peek().isPresent()) {	
+			if(slot.peek().isEmpty()) {	
 				if(slot.set(itemStack).getType().equals(Type.SUCCESS)) {
 					return true;
 				}
@@ -282,38 +278,34 @@ public class KitService {
 	
 	private boolean likeStack(ItemStack itemStack, Inventory inventory) {
 		for (Inventory slot : inventory.slots()) {
-			Optional<ItemStack> optionalItem = slot.peek();
+			ItemStack i = slot.peek();
 			
-			if(optionalItem.isPresent()) {
-				ItemStack i = optionalItem.get();
+			if(i.getType().equals(itemStack.getType())) {
+				int fit = i.getMaxStackQuantity() - i.getQuantity();
 				
-				if(i.getType().equals(itemStack.getType())) {
-					int fit = i.getMaxStackQuantity() - i.getQuantity();
+				if(fit >= itemStack.getQuantity()) {
+					i.setQuantity(i.getQuantity() + itemStack.getQuantity());
 					
-					if(fit >= itemStack.getQuantity()) {
-						i.setQuantity(i.getQuantity() + itemStack.getQuantity());
-						
-						if(slot.set(i).getType().equals(Type.SUCCESS)) {
-							return true;
-						}
-					} else if(fit != 0) {
-						i.setQuantity(i.getQuantity() + fit);
+					if(slot.set(i).getType().equals(Type.SUCCESS)) {
+						return true;
+					}
+				} else if(fit != 0) {
+					i.setQuantity(i.getQuantity() + fit);
 
-						if(slot.set(i).getType().equals(Type.SUCCESS)) {
-							itemStack.setQuantity(itemStack.getQuantity() - fit);
-						}
+					if(slot.set(i).getType().equals(Type.SUCCESS)) {
+						itemStack.setQuantity(itemStack.getQuantity() - fit);
 					}
 				}
 			}
 		}
-		
+
 		return false;
 	}
 	
 	private void restoreInventory(Player player, Kit backup) {
 		player.getInventory().clear();
 
-		PlayerInventory inv = player.getInventory().query(QueryOperationTypes.INVENTORY_TYPE.of(PlayerInventory.class));
+		PlayerInventory inv = (PlayerInventory) player.getInventory().query(QueryOperationTypes.INVENTORY_TYPE.of(PlayerInventory.class));
 
 		Map<Integer, ItemStack> hotbar = backup.getHotbar();
 
@@ -331,7 +323,7 @@ public class KitService {
 
 		if (!grid.isEmpty()) {
 			int i = 0;
-			for (Inventory slot : inv.getMainGrid().slots()) {
+			for (Inventory slot : inv.getStorage().slots()) {
 				if (grid.containsKey(i)) {
 					slot.set(grid.get(i));
 				}
@@ -339,34 +331,10 @@ public class KitService {
 			}
 		}
 
-		Optional<ItemStack> helmet = backup.getHelmet();
-
-		if (helmet.isPresent()) {
-			player.setHelmet(helmet.get());
-		}
-
-		Optional<ItemStack> chestPlate = backup.getChestPlate();
-
-		if (chestPlate.isPresent()) {
-			player.setChestplate(chestPlate.get());
-		}
-		
-		Optional<ItemStack> leggings = backup.getLeggings();
-
-		if (leggings.isPresent()) {
-			player.setLeggings(leggings.get());
-		}
-		
-		Optional<ItemStack> boots = backup.getBoots();
-
-		if (boots.isPresent()) {
-			player.setBoots(boots.get());
-		}
-		
-		Optional<ItemStack> offHand = backup.getOffHand();
-
-		if (offHand.isPresent()) {
-			player.setItemInHand(HandTypes.OFF_HAND, offHand.get());
-		}
+		player.setHelmet(backup.getHelmet());
+		player.setChestplate(backup.getChestPlate());
+		player.setLeggings(backup.getLeggings());
+		player.setBoots(backup.getBoots());
+		player.setItemInHand(HandTypes.OFF_HAND, backup.getOffHand());
 	}
 }

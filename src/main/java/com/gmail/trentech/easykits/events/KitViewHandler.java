@@ -1,6 +1,5 @@
 package com.gmail.trentech.easykits.events;
 
-import java.util.Optional;
 import java.util.function.Consumer;
 
 import org.spongepowered.api.Sponge;
@@ -70,33 +69,32 @@ public class KitViewHandler implements Consumer<ClickInventoryEvent> {
 		int i = 0;
 		for (Inventory slot : event.getTargetInventory().slots()) {
 			if (i < 27) {
-				Optional<ItemStack> optionalItem = slot.peek();
+				ItemStack item = slot.peek();
 
-				if (optionalItem.isPresent()) {
-					kit.addGrid(i, optionalItem.get());
+				if (!item.isEmpty()) {
+					kit.addGrid(i, item);
 				} else {
 					kit.removeGrid(i);
 				}
 			} else if (i < 36) {
-				Optional<ItemStack> optionalItem = slot.peek();
+				ItemStack item = slot.peek();
 
-				if (optionalItem.isPresent()) {
-					kit.addHotbar(i - 27, optionalItem.get());
+				if (!item.isEmpty()) {
+					kit.addHotbar(i - 27, item);
 				} else {
 					kit.removeHotbar(i - 27);
 				}
 			} else if (i < 40) {
-				Optional<ItemStack> optionalItem = slot.peek();
+				ItemStack item = slot.peek();
 
-				if (optionalItem.isPresent()) {
-					kit.addEquipment(i - 36, optionalItem.get());
+				if (!item.isEmpty()) {
+					kit.addEquipment(i - 36, item);
 				} else {
 					kit.removeEquipment(i - 36);
 				}
 			} else if(i == 40) {
-				Optional<ItemStack> optionalItem = slot.peek();
-
-				kit.setOffHand(optionalItem);
+				ItemStack item = slot.peek();
+				kit.setOffHand(item);
 			}
 
 			i++;

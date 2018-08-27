@@ -30,7 +30,7 @@ public class ImmutablePlayerData extends AbstractImmutableMappedData<String, Kit
 	}
 
 	@Override
-	public DataContainer toContainer() {
+	protected DataContainer fillContainer(DataContainer dataContainer) {
 		return super.toContainer().set(KIT_USAGES, getValue());
 	}
 }

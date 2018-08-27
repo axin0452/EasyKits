@@ -5,6 +5,7 @@ import static com.gmail.trentech.easykits.data.Keys.KIT_INFO;
 import java.util.Optional;
 
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.key.Key;
 import org.spongepowered.api.data.manipulator.immutable.common.AbstractImmutableSingleData;
 import org.spongepowered.api.data.value.BaseValue;
@@ -42,5 +43,10 @@ public class ImmutableKitInfoData extends AbstractImmutableSingleData<KitInfo, I
 	@Override
 	public KitInfoData asMutable() {
 		return new KitInfoData(this.getValue());
+	}
+
+	@Override
+	protected DataContainer fillContainer(DataContainer dataContainer) {
+		return super.toContainer().set(KIT_INFO, getValue());
 	}
 }
