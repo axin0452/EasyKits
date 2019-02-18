@@ -69,10 +69,10 @@ public class Main {
 		Sponge.getDataManager().registerBuilder(Kit.class, new Kit.Builder());
 		Sponge.getDataManager().registerBuilder(KitInfo.class, new KitInfo.Builder());
 		
-		DataRegistration.builder().dataClass(PlayerData.class).immutableClass(ImmutablePlayerData.class).builder(new PlayerData.Builder()).dataName("player_data")
-			.manipulatorId("player_data").buildAndRegister(Main.getPlugin());
-		DataRegistration.builder().dataClass(KitInfoData.class).immutableClass(ImmutableKitInfoData.class).builder(new KitInfoData.Builder()).dataName("kit_info_data")
-			.manipulatorId("kit_info_data").buildAndRegister(Main.getPlugin());
+		DataRegistration.builder().dataClass(PlayerData.class).immutableClass(ImmutablePlayerData.class).builder(new PlayerData.Builder()).name("player_data")
+			.id("player_data").build();
+		DataRegistration.builder().dataClass(KitInfoData.class).immutableClass(ImmutableKitInfoData.class).builder(new KitInfoData.Builder()).name("kit_info_data")
+			.id("kit_info_data").build();
 	
 		Common.initData();
 		Common.initHelp();

@@ -24,11 +24,11 @@ import com.google.common.base.Preconditions;
 public class PlayerData extends AbstractMappedData<String, KitUsage, PlayerData, ImmutablePlayerData> {
 
 	public PlayerData(Map<String, KitUsage> value) {
-		super(value, KIT_USAGES);
+		super(KIT_USAGES, value);
 	}
 
 	public PlayerData() {
-		super(new HashMap<>(), KIT_USAGES);
+		super(KIT_USAGES, new HashMap<>());
 	}
 
 	public MapValue<String, KitUsage> portals() {
