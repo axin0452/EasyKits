@@ -13,7 +13,7 @@ import org.spongepowered.api.data.value.immutable.ImmutableValue;
 public class ImmutableKitInfoData extends AbstractImmutableSingleData<KitInfo, ImmutableKitInfoData, KitInfoData> {
 
 	protected ImmutableKitInfoData(KitInfo value) {
-		super(value, KIT_INFO);
+		super(KIT_INFO, value);
 	}
 
 	public ImmutableValue<KitInfo> kitInfo() {

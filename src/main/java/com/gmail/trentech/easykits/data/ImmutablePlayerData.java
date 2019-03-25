@@ -12,7 +12,7 @@ import org.spongepowered.api.data.value.immutable.ImmutableMapValue;
 public class ImmutablePlayerData extends AbstractImmutableMappedData<String, KitUsage, ImmutablePlayerData, PlayerData> {
 
 	public ImmutablePlayerData(Map<String, KitUsage> value) {
-		super(value, KIT_USAGES);
+		super(KIT_USAGES, value);
 	}
 
 	public ImmutableMapValue<String, KitUsage> homes() {

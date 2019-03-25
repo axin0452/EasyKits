@@ -20,11 +20,11 @@ import com.google.common.base.Preconditions;
 public class KitInfoData extends AbstractSingleData<KitInfo, KitInfoData, ImmutableKitInfoData> {
 
 	public KitInfoData() {
-		super(new KitInfo("", false), KIT_INFO);
+		super(KIT_INFO, new KitInfo("", false));
 	}
 
 	public KitInfoData(KitInfo value) {
-		super(value, KIT_INFO);
+		super(KIT_INFO, value);
 	}
 
 	public Value<KitInfo> kitInfo() {
