@@ -162,9 +162,9 @@ public class Common {
 		if (config.getNode("options", "currency-symbol").isVirtual()) {
 			config.getNode("options", "currency-symbol").setValue("$").setComment("The leading symbol when displaying prices");
 		}
-		if (config.getNode("options", "new-player-kit").isVirtual()) {
-			config.getNode("options", "new-player-kit").setValue("starter").setComment("Kit to give new players.");
-		}			
+		if (!config.getNode("options", "new-player-kit").isVirtual()) {
+			config.getNode("options", "new-player-kit").setValue(null);
+		}
 		if (config.getNode("options", "sign-action").isVirtual()) {
 			config.getNode("options", "sign-action").setValue("view").setComment("Sign click action. 'view' 'get' or 'book'");
 		}

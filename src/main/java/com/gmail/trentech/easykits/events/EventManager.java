@@ -25,12 +25,12 @@ import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.EventContext;
 import org.spongepowered.api.event.cause.EventContextKeys;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
-import org.spongepowered.api.event.entity.living.humanoid.player.RespawnPlayerEvent;
 import org.spongepowered.api.event.filter.Getter;
 import org.spongepowered.api.event.filter.cause.Root;
 import org.spongepowered.api.event.item.inventory.ClickInventoryEvent;
 import org.spongepowered.api.event.item.inventory.InteractItemEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
+import org.spongepowered.api.event.world.LoadWorldEvent;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.Inventory.Builder;
 import org.spongepowered.api.item.inventory.InventoryArchetypes;
@@ -45,7 +45,7 @@ import org.spongepowered.api.service.economy.EconomyService;
 import org.spongepowered.api.service.economy.account.UniqueAccount;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
-import org.spongepowered.api.world.storage.WorldProperties;
+import org.spongepowered.api.world.World;
 
 import com.gmail.trentech.easykits.Main;
 import com.gmail.trentech.easykits.data.ImmutableKitInfoData;
@@ -56,14 +56,28 @@ import com.gmail.trentech.easykits.data.PlayerData;
 import com.gmail.trentech.easykits.kit.Kit;
 import com.gmail.trentech.easykits.kit.KitService;
 import com.gmail.trentech.easykits.utils.Resource;
+import com.gmail.trentech.easykits.utils.WorldConfig;
 import com.gmail.trentech.pjc.core.ConfigManager;
+
+import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 
 public class EventManager {
 	
 	@Listener(order = Order.POST)
 	public void ClientConnectionEventJoin(ClientConnectionEvent.Join event, @Getter("getTargetEntity") Player player) {
-		if(player.getJoinData().lastPlayed().get().getEpochSecond() - player.getJoinData().firstPlayed().get().getEpochSecond() <= 3) {
-			String kitName = ConfigManager.get(Main.getPlugin()).getConfig().getNode("options", "new-player-kit").getString();
+		World world = player.getWorld();
+		
+		WorldConfig worldConfig = WorldConfig.get(world);
+		
+		if(worldConfig.getConfig().getNode(player.getUniqueId().toString()).isVirtual()) {
+			ConfigManager configManager = ConfigManager.init(Main.getPlugin());
+			CommentedConfigurationNode config = configManager.getConfig();
+
+			String kitName = config.getNode("options", "first-join", world.getName()).getString();
+			
+			if(kitName.equalsIgnoreCase("NONE")) {
+				return;
+			}
 			
 			KitService kitService = Sponge.getServiceManager().provideUnchecked(KitService.class);
 			
@@ -75,24 +89,61 @@ public class EventManager {
 			}
 			
 			kitService.setKit(player, optionalKit.get(), false);
+			
+			worldConfig.getConfig().getNode(player.getUniqueId().toString()).setValue(true);
+			worldConfig.save();
 		}
 	}
 
 	@Listener
-	public void onRespawnPlayerEvent(RespawnPlayerEvent event, @Getter("getTargetEntity") Player player) {
-		// RESPAWN KITS..MAYBE
+	public void onLoadWorldEvent(LoadWorldEvent event) {
+		World world = event.getTargetWorld();
+
+		ConfigManager configManager = ConfigManager.init(Main.getPlugin());
+		CommentedConfigurationNode config = configManager.getConfig();
+
+		if (config.getNode("options", "first-join", world.getName()).isVirtual()) {
+			config.getNode("options", "first-join", world.getName()).setValue("NONE").setComment("Kit to give players when they enter " + world.getName() + " for the first time.");
+		}
+		
+		configManager.save();
+		WorldConfig.init(world);
 	}
 
 	@Listener(order = Order.POST)
 	public void onMoveEntityEventTeleport(MoveEntityEvent.Teleport event, @Getter("getTargetEntity") Player player) {
-		WorldProperties from = event.getFromTransform().getExtent().getProperties();
-		WorldProperties to = event.getToTransform().getExtent().getProperties();
+		World world = event.getToTransform().getExtent();
 
-		if (from.equals(to)) {
+		if (event.getFromTransform().getExtent().equals(world)) {
 			return;
 		}
 		
-		// FIRST JOIN WORLD KITS?
+		WorldConfig worldConfig = WorldConfig.get(world);
+		
+		if(worldConfig.getConfig().getNode(player.getUniqueId().toString()).isVirtual()) {
+			ConfigManager configManager = ConfigManager.init(Main.getPlugin());
+			CommentedConfigurationNode config = configManager.getConfig();
+
+			String kitName = config.getNode("options", "first-join", world.getName()).getString();
+			
+			if(kitName.equalsIgnoreCase("NONE")) {
+				return;
+			}
+			
+			KitService kitService = Sponge.getServiceManager().provideUnchecked(KitService.class);
+			
+			Optional<Kit> optionalKit = kitService.getKit(kitName);
+			
+			if(!optionalKit.isPresent()) {
+				Sponge.getServer().getConsole().sendMessage(Text.of(TextColors.RED, "Could not give new player kit because ", kitName, " does not exist."));
+				return;
+			}
+			
+			kitService.setKit(player, optionalKit.get(), false);
+			
+			worldConfig.getConfig().getNode(player.getUniqueId().toString()).setValue(true);
+			worldConfig.save();
+		}
 	}
 
 	@Listener
