@@ -24,6 +24,7 @@ public class KitBookHandler implements Consumer<ClickInventoryEvent> {
 	
 	@Override
 	public void accept(ClickInventoryEvent event) {
+		event.setCancelled(true);
 		Player player = event.getCause().first(Player.class).get();
 
 		for(SlotTransaction transaction : event.getTransactions()) {
@@ -43,7 +44,6 @@ public class KitBookHandler implements Consumer<ClickInventoryEvent> {
 			}
 		}
 		
-		event.setCancelled(true);
 		return;
 	}
 
